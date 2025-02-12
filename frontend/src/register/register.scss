@@ -1,0 +1,77 @@
+.register {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: darkslategray;
+  height: 100vh;
+
+  .card {
+    display: flex;
+    flex-direction: row-reverse;
+    width: 50%;
+    min-height: 600px;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+
+    .left {
+      flex: 1;
+      background: linear-gradient(rgba(39, 11, 96, 0.5), rgba(39, 11, 96, 0.5)),
+        url("https://images.pexels.com/photos/4881619/pexels-photo-4881619.jpeg?auto=compress&cs=tinysrgb&w=1600")
+          center;
+      background-size: cover;
+      display: flex;
+      padding: 10px;
+      flex-direction: column;
+      text-align: center;
+      gap: 30px;
+      color: white;
+
+      h1 {
+        font-size: 100px;
+        line-height: 100px;
+      }
+
+      span {
+        padding: 14px;
+      }
+    }
+
+    button {
+      background-color: cyan;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      width: 50%;
+      align-self: center;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      margin-bottom: 50px;
+    }
+
+    .right {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      text-align: center;
+      gap: 50px;
+      padding: 50px;
+      justify-content: center;
+
+      h1 {
+        color: #555;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        input {
+          border: none;
+          border-bottom: 1px solid lightgray;
+          padding: 20px 10px;
+        }
+      }
+    }
+  }
+}
