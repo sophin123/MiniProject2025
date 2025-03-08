@@ -1,0 +1,48 @@
+
+$primary-color: #4a6bdf;
+$secondary-color: #f0f4ff;
+$accent-color: #ff6b6b;
+$text-color: #333;
+$border-raidus: 8px;
+$transition-speed: 0.3s;
+
+
+.App{
+    display: flex;
+    margin: 10px;
+    padding: 20px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background-color: white;
+    border-radius: $border-raidus;
+    box-shadow: 0 4px 10px rgba(27, 25, 25, 0.389);
+
+.file-list{
+    width: 60%;
+
+    .file-item {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        border: 1px grey solid;
+        margin: 10px;
+        padding: 10px;
+        border-radius: $border-raidus;
+        justify-content: space-between;
+
+        .icon-field{
+            display: flex;
+            flex-direction: row;
+            width: 20%;
+            justify-content: space-between;
+            align-self: center;
+            margin-right: 20px;
+        }
+    }
+
+}
+
+
+}
