@@ -111,6 +111,18 @@ function App() {
 
   }
 
+  const getFileIcon = (filetype) => {
+    if (filetype.includes('image')) return '🖼️';
+    if (filetype.includes('pdf')) return '📄';
+    if (filetype.includes('document') || filetype.includes('word')) return '📝';
+    if (filetype.includes('spreadsheet') || filetype.includes('excel')) return '📊';
+    if (filetype.includes('video')) return '🎬';
+    if (filetype.includes('audio')) return '🎵';
+    if (filetype.includes('zip') || filetype.includes('compressed')) return '🗜️';
+    if (filetype.includes('text')) return '📝';
+    return '📁';
+  };
+
   return (
     <div className={`App upload-section ${dragActive ? 'drag-active' : ''}`} onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}>
       <h1>File Manager</h1>
@@ -121,11 +133,11 @@ function App() {
       )
       }
 
-      <div>
-        <div className='upload-icon'>
+      <div className='file-section'>
+        {/* <div className='upload-icon'>
           <FiUpload size={40} />
-        </div>
-        <p>Drag & drop files anywhere on screen or</p>
+        </div> */}
+        <p>DRAG OR DROP FILES ANYWHERE ON PAGE OR</p>
         <label className='file-input-label'>
           Browse Files
           <input className='file-input' type='file' onChange={(e) => setSelectedFile(e.target.files[0])} />
@@ -133,7 +145,11 @@ function App() {
         {selectedFile && (
           <div className='selected-file'>
             <p>{selectedFile.name}</p>
-            <button className='upload-button' onClick={handleUpload}>{isUploading ? 'Uploading....' : 'Upload'}</button>
+            <button className='upload-button'
+              onClick={handleUpload}
+            >
+              {isUploading ? 'Uploading....' : 'Upload'}
+            </button>
           </div>
         )}
       </div>
@@ -141,7 +157,7 @@ function App() {
       {
         isUploading && (
           <div className='progress-container'>
-            <div className='progress-bar' style={{ width: `${uploadProgress}` }}></div>
+            <div className='progress-bar' style={{ width: `${uploadProgress}%` }}></div>
             <span>{uploadProgress}%</span>
           </div>
         )
@@ -152,7 +168,7 @@ function App() {
           files.map(file => (
             <div key={file.id} className='file-item'>
               <div>
-                <p><b>Filename</b>: {file.filename}</p>
+                <p><b>Filename</b>: {file.filename} {getFileIcon(file.filetype)}</p>
                 <p><b>Filetype</b>: {file.filetype}</p>
                 <span><b>Uploaded at</b> {new Date(file.uploaded_at).toLocaleString()}</span>
               </div>
