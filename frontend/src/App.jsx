@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios'
 import './App.scss'
 
-import { FiEye, FiDownload } from 'react-icons/fi'
+import { FiEye, FiDownload, FiUpload } from 'react-icons/fi'
 import { FaTrash } from 'react-icons/fa'
 
 function App() {
@@ -11,6 +11,7 @@ function App() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgres] = useState(0);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' })
+  const [dragActive, setDragActive] = useState(false);
 
   // backend url for hyperlink tag
   const baseURL = process.env.REACT_APP_BASE_URL;
@@ -60,7 +61,6 @@ function App() {
     } finally {
       setIsUploading(false);
     }
-
   }
 
 
@@ -78,6 +78,7 @@ function App() {
   }
 
 
+
   const showNotification = (message, type) => {
     setNotification({ show: true, message, type })
     setTimeout(() => {
@@ -86,24 +87,52 @@ function App() {
 
   }
 
-  console.log("Selected File", selectedFile);
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(e.type);
 
+    if (e.type === 'dragover' || e.type === 'dragenter') {
+      setDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setDragActive(false)
+    }
+  }
+
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setSelectedFile(e.dataTransfer.files[0]);
+    }
+
+  }
 
   return (
-    <div className="App">
+    <div className={`App upload-section ${dragActive ? 'drag-active' : ''}`} onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}>
       <h1>File Manager</h1>
 
       {notification.show && (
         <div className={`notification ${notification.type}`}>
           {notification.message} </div>
       )
-
       }
-      <div className='upload-section'>
-        <input type='file' onChange={(e) => setSelectedFile(e.target.files[0])} />
+
+      <div>
+        <div className='upload-icon'>
+          <FiUpload size={40} />
+        </div>
+        <p>Drag & drop files anywhere on screen or</p>
+        <label className='file-input-label'>
+          Browse Files
+          <input className='file-input' type='file' onChange={(e) => setSelectedFile(e.target.files[0])} />
+        </label>
         {selectedFile && (
           <div className='selected-file'>
-            {/* <p>{selectedFile.name}</p> */}
+            <p>{selectedFile.name}</p>
             <button className='upload-button' onClick={handleUpload}>{isUploading ? 'Uploading....' : 'Upload'}</button>
           </div>
         )}
