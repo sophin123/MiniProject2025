@@ -8,6 +8,9 @@ import { FaTrash } from 'react-icons/fa'
 function App() {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgres] = useState(0);
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' })
 
   // backend url for hyperlink tag
   const baseURL = process.env.REACT_APP_BASE_URL;
@@ -30,25 +33,90 @@ function App() {
   }
 
   const handleUpload = async () => {
+    if (!selectedFile) {
+      showNotification("Please select a file first", "error");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgres(0);
+
+
     const formData = new FormData();
     formData.append('file', selectedFile);
+    try {
+      await axios.post("/upload", formData, {
+        onUploadProgress: (progressEvent) => {
+          const percentageCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgres(percentageCompleted);
+        }
+      });
+      setSelectedFile(null);
+      showNotification("File Uploaded Successfully!", 'success');
+      fetchFiles();
+    } catch (error) {
+      showNotification('Upload Failed', 'error');
+      console.error('Upload Error', error);
+    } finally {
+      setIsUploading(false);
+    }
 
-    await axios.post("/upload", formData)
-    fetchFiles();
   }
 
 
-  const handleDelete = async (id) => {
-    await axios.delete(`/file/${id}`);
-    fetchFiles();
+  const handleDelete = async (id, filename) => {
+    try {
+      await axios.delete(`/file/${id}`);
+      showNotification(`${filename} Deleted Successfully`, 'success');
+      fetchFiles();
+
+    } catch (error) {
+      showNotification("Delete Failed", 'error');
+      console.error("Delete Error", error)
+    }
+
   }
+
+
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type })
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: '' })
+    }, 3000)
+
+  }
+
+  console.log("Selected File", selectedFile);
+
 
   return (
     <div className="App">
+      <h1>File Manager</h1>
+
+      {notification.show && (
+        <div className={`notification ${notification.type}`}>
+          {notification.message} </div>
+      )
+
+      }
       <div className='upload-section'>
         <input type='file' onChange={(e) => setSelectedFile(e.target.files[0])} />
-        <button onClick={handleUpload}>Upload</button>
+        {selectedFile && (
+          <div className='selected-file'>
+            {/* <p>{selectedFile.name}</p> */}
+            <button className='upload-button' onClick={handleUpload}>{isUploading ? 'Uploading....' : 'Upload'}</button>
+          </div>
+        )}
       </div>
+
+      {
+        isUploading && (
+          <div className='progress-container'>
+            <div className='progress-bar' style={{ width: `${uploadProgress}` }}></div>
+            <span>{uploadProgress}%</span>
+          </div>
+        )
+      }
 
       <div className='file-list'>
         {files.length === 0 ? (<p>No Data Found</p>) : (
@@ -67,7 +135,7 @@ function App() {
                 <div className='download'>
                   <a href={`${baseURL}/download/${file.filename}`} download className='download-btn'><FiDownload /> </a>
                 </div>
-                <FaTrash onClick={() => handleDelete(file.id)} color='red' />
+                <FaTrash onClick={() => handleDelete(file.id, file.filename)} color='red' />
               </div>
             </div>
 
@@ -75,7 +143,7 @@ function App() {
           )
         )}
       </div>
-    </div>
+    </div >
   );
 }
 
