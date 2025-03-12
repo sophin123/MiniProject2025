@@ -16,7 +16,7 @@ app.use(cors({
 
 app.use("/api/upload", express.static("uploads"));
 
-app.use(express.json());
+app.use(express.json({ limit : '10mb'}));
 // app.use('/uploads', express.static('uploads'));
 
  // MySQL Connection
@@ -62,7 +62,9 @@ const storage = multer.diskStorage({
 })
 
 // Upload files in storage
-const upload = multer({storage})
+const upload = multer({storage, limits: {
+  fileSize: 10 * 1024 * 1024
+}})
 
 // Upload endpoint
 app.post("/api/upload", upload.single('file'), (req, res) => {
@@ -74,7 +76,6 @@ app.post("/api/upload", upload.single('file'), (req, res) => {
     if(err) return res.status(500).json(err);
     res.status(200).json({message : "File Uploaded Successfully"})
   })
-
 })
 
 // Get files endpoint
@@ -88,7 +89,6 @@ app.get("/api/files", (req, res) => {
 
     if(err) return res.status(500).json(err);
     res.status(200).json(result);
-  
   })
 })
 
