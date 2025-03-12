@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import axios from 'axios'
 import './App.scss'
 
-import { FiEye, FiDownload, FiUpload } from 'react-icons/fi'
+import { FiEye, FiDownload } from 'react-icons/fi'
 import { FaTrash } from 'react-icons/fa'
+
 
 function App() {
   const [files, setFiles] = useState([]);
@@ -13,19 +14,25 @@ function App() {
   const [notification, setNotification] = useState({ show: false, message: '', type: '' })
   const [dragActive, setDragActive] = useState(false);
 
+
   // backend url for hyperlink tag
-  const baseURL = process.env.REACT_APP_BASE_URL;
+  const API_URL = process.env.REACT_APP_BASE_URL;
+
+  console.log("Checking api url", API_URL);
 
   useEffect(() => {
     // get all files from db
     fetchFiles();
   }, [])
 
+  const api = axios.create({
+    baseURL: API_URL,
+  });
+
 
   const fetchFiles = async () => {
     try {
-      const result = await axios.get("/files")
-      console.log("Result", result);
+      const result = await api.get("/files")
       setFiles(result.data)
     } catch (error) {
       console.log("Error fetching Files", error);
@@ -46,7 +53,7 @@ function App() {
     const formData = new FormData();
     formData.append('file', selectedFile);
     try {
-      await axios.post("/upload", formData, {
+      await api.post("/upload", formData, {
         onUploadProgress: (progressEvent) => {
           const percentageCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           setUploadProgres(percentageCompleted);
@@ -66,7 +73,7 @@ function App() {
 
   const handleDelete = async (id, filename) => {
     try {
-      await axios.delete(`/file/${id}`);
+      await api.delete(`/file/${id}`);
       showNotification(`${filename} Deleted Successfully`, 'success');
       fetchFiles();
 
@@ -134,9 +141,7 @@ function App() {
       }
 
       <div className='file-section'>
-        {/* <div className='upload-icon'>
-          <FiUpload size={40} />
-        </div> */}
+
         <p>DRAG OR DROP FILES ANYWHERE ON PAGE OR</p>
         <label className='file-input-label'>
           Browse Files
@@ -175,12 +180,14 @@ function App() {
               <div className='icon-field'>
                 <div className='view'>
                   {/* rel attribute helps mitigate security threat called Tabnabbing. One of the security feature */}
-                  <a href={`${baseURL}/upload/${file.filename}`} target='_blank' rel="noopener noreferrer" className='download-btn'><FiEye /> </a>
+                  <a href={`${API_URL}/upload/${file.filename}`} target='_blank' rel="noopener noreferrer" className='download-btn'><FiEye /> </a>
                 </div>
                 <div className='download'>
-                  <a href={`${baseURL}/download/${file.filename}`} download className='download-btn'><FiDownload /> </a>
+                  <a href={`${API_URL}/download/${file.filename}`} download className='download-btn'><FiDownload /> </a>
                 </div>
-                <FaTrash onClick={() => handleDelete(file.id, file.filename)} color='red' />
+                <div className='trash'>
+                  <FaTrash onClick={() => handleDelete(file.id, file.filename)} color='red' />
+                </div>
               </div>
             </div>
 

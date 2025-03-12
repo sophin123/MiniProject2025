@@ -14,7 +14,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'] // Specify allowed headers in CORS requests
 }));
 
-app.use("/upload", express.static("uploads"));
+app.use("/api/upload", express.static("uploads"));
 
 app.use(express.json());
 // app.use('/uploads', express.static('uploads'));
@@ -65,7 +65,7 @@ const storage = multer.diskStorage({
 const upload = multer({storage})
 
 // Upload endpoint
-app.post("/upload", upload.single('file'), (req, res) => {
+app.post("/api/upload", upload.single('file'), (req, res) => {
   const {filename, path: filepath,  mimetype } = req.file
 
   const q = 'INSERT INTO files (filename, filepath, filetype) VALUES (?, ?, ?)';
@@ -78,7 +78,7 @@ app.post("/upload", upload.single('file'), (req, res) => {
 })
 
 // Get files endpoint
-app.get("/files", (req, res) => {
+app.get("/api/files", (req, res) => {
   const q = 'SELECT * FROM files ORDER BY uploaded_at DESC';
 
   db.query(q, (err, result) => {
@@ -93,7 +93,7 @@ app.get("/files", (req, res) => {
 })
 
 // Delete file endpoint
-app.delete("/file/:id", (req, res) => {
+app.delete("/api/file/:id", (req, res) => {
 
   const q = 'SELECT * FROM files WHERE id = ?';
   db.query(q, [req.params.id], (err, result) => {
