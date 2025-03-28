@@ -37,7 +37,6 @@ function App() {
     } catch (error) {
       console.log("Error fetching Files", error);
     }
-
   }
 
   const handleUpload = async () => {

@@ -115,7 +115,7 @@ app.delete("/api/file/:id", (req, res) => {
 })
 
 // Download endpoint
-app.get('/download/:filename', (req, res) => {
+app.get('/api/download/:filename', (req, res) => {
   const file = `${__dirname}/uploads/${req.params.filename}`;
   console.log("file", file);
 
