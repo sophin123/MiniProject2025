@@ -1,4 +1,4 @@
-A project to share your files in between different devices connected withing same local network.
+A project to share your files in between different devices connected within same local network.
 
 I have not put this sites available publicly due to security issues. 
 
