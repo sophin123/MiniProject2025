@@ -6,6 +6,10 @@ const mysql = require("mysql2");
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+// require('dotenv').config();
+require('dotenv').config({ path: '/home/sophin123/file-sharing/.env.development' })
+require('dotenv').config({ path: '/home/sophin123/file-sharing/.env.production' })
+
 
 // Enable Cross-Origin Resource Sharing (CORS) for the application
 app.use(cors({
@@ -18,19 +22,31 @@ app.use("/api/upload", express.static("uploads"));
 
 app.use(express.json({ limit : '10mb'}));
 // app.use('/uploads', express.static('uploads'));
+console.log("User:", process.env.MYSQL_USER);
+console.log("Database :" , process.env.MYSQL_DATABASE);
 
  // MySQL Connection
   const db = mysql.createConnection({
-    host : 'localhost',
-    user: 'sophindb',
-    password: 'Goodluck123@',
-    database : 'file_sharing'
+    host : process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: "fileshare"
   })
 
   db.connect(function(err){
     if (err) throw err;
     console.log("connection as id " + db.threadId);
   })
+
+  // // Create user if not exist
+  // try {
+  //   const createUser = `CREATE USER IF NOT EXISTS 'sophindb'@'%' IDENTIFIED BY 'Goodluck123@';
+  //   GRANT ALL PRIVILEGES ON *.* TO 'sophindb'@'%';
+  //   FLUSH PRIVILEGES;`
+  //   db.execute(createUser)
+  // } catch(err) {
+  //   console.log("Error Creating User", err);
+  // }
 
   // Create table if not exist
   try {

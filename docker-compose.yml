@@ -1,0 +1,39 @@
+services:
+  backend:
+    build: ./backend
+    container_name: api_backend  
+    ports:
+      - '2000:2000'
+    volumes:
+      - ./backend:/app
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DB: ${MYSQL_DATABASE}
+    # env_file:
+    # - .env.development
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - file-share-mysql:/var/lib/mysql
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+
+  client:
+    build: ./frontend
+    container_name: client_frontend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend:/app
+    stdin_open: true
+    tty: true
+
+volumes:
+  file-share-mysql:
+
+
