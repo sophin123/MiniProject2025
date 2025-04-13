@@ -13,6 +13,7 @@ function App() {
   const [uploadProgress, setUploadProgres] = useState(0);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' })
   const [dragActive, setDragActive] = useState(false);
+  const [loading, setLoading] = useState(true);
 
 
   // backend url for hyperlink tag
@@ -36,6 +37,8 @@ function App() {
       setFiles(result.data)
     } catch (error) {
       console.log("Error fetching Files", error);
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -69,7 +72,6 @@ function App() {
     }
   }
 
-
   const handleDelete = async (id, filename) => {
     try {
       await api.delete(`/file/${id}`);
@@ -82,7 +84,6 @@ function App() {
     }
 
   }
-
 
 
   const showNotification = (message, type) => {
@@ -104,7 +105,6 @@ function App() {
       setDragActive(false)
     }
   }
-
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -131,7 +131,7 @@ function App() {
 
   return (
     <div className={`App upload-section ${dragActive ? 'drag-active' : ''}`} onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}>
-      <h1>File Manager</h1>
+      <h1>File Manager </h1>
 
       {notification.show && (
         <div className={`notification ${notification.type}`}>
@@ -168,7 +168,7 @@ function App() {
       }
 
       <div className='file-list'>
-        {files.length === 0 ? (<p>No Data Found</p>) : (
+        {loading ? (<p>Loading......</p>) : files.length === 0 ? (<p>No Data Found</p>) : (
           files.map(file => (
             <div key={file.id} className='file-item'>
               <div>
