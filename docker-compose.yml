@@ -11,8 +11,10 @@ services:
       MYSQL_DB: ${MYSQL_DATABASE}
       NODE_ENV: production
       MAX_FILE_SIZE: 20971520
-    # env_file:
-    # - .env.development
+    depends_on:
+      mysql:
+        condition: service_healthy # Wait until MySQL is healthy
+
   mysql:
     image: mysql:8.0
     volumes:
@@ -22,6 +24,12 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
+    healthcheck:
+      # Add healthcheck
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   client:
     build: ./frontend
