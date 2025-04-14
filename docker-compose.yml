@@ -9,6 +9,8 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DB: ${MYSQL_DATABASE}
+      NODE_ENV: production
+      MAX_FILE_SIZE: 20971520
     # env_file:
     # - .env.development
   mysql:
