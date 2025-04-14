@@ -1,5 +1,5 @@
 # Use the latest LTS version of Node.js
-FROM node:18-alpine
+FROM node:18-alpine as build
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -13,8 +13,16 @@ RUN yarn install
 # Copy the rest of your application files
 COPY . .
 
-# Expose the port your app runs on
-EXPOSE 3000
+RUN yarn run build
 
-# Define the command to run your app
-CMD ["yarn", "start"]
+# Nginx container
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose the port your app runs on
+EXPOSE 80
+
+
+
+

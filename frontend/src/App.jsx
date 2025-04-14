@@ -65,7 +65,7 @@ function App() {
       showNotification("File Uploaded Successfully!", 'success');
       fetchFiles();
     } catch (error) {
-      showNotification('Upload Failed', 'error');
+      showNotification('Upload Failed');
       console.error('Upload Error', error);
     } finally {
       setIsUploading(false);
