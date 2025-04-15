@@ -10,6 +10,29 @@ const fs = require('fs');
 require('dotenv').config({ path: '/home/sophin123/file-sharing/.env.development' })
 require('dotenv').config({ path: '/home/sophin123/file-sharing/.env.production' })
 
+// Define upload directory path
+const UPLOAD_DIR = path.join(__dirname, "uploads");
+
+// Create directory if it doesn't exist
+const createUploadDir = () => {
+  try {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    console.log(`Upload directory created at: ${UPLOAD_DIR}`);
+  } catch (err) {
+    console.error(`Error creating upload directory: ${err.message}`);
+  }
+};
+
+// Call this function during server startup
+createUploadDir();
+
+// Add middleware to check directory before upload
+const ensureUploadDir = (req, res, next) => {
+  if (!fs.existsSync(UPLOAD_DIR)) {
+    createUploadDir();
+  }
+  next();
+};
 
 // Enable Cross-Origin Resource Sharing (CORS) for the application
 app.use(cors({
@@ -38,15 +61,6 @@ console.log("Database :" , process.env.MYSQL_DATABASE);
     console.log("connection as id " + db.threadId);
   })
 
-  // // Create user if not exist
-  // try {
-  //   const createUser = `CREATE USER IF NOT EXISTS 'sophindb'@'%' IDENTIFIED BY 'Goodluck123@';
-  //   GRANT ALL PRIVILEGES ON *.* TO 'sophindb'@'%';
-  //   FLUSH PRIVILEGES;`
-  //   db.execute(createUser)
-  // } catch(err) {
-  //   console.log("Error Creating User", err);
-  // }
 
   // Create table if not exist
   try {
@@ -83,7 +97,7 @@ const upload = multer({storage, limits: {
 }})
 
 // Upload endpoint
-app.post("/api/upload", upload.single('file'), (req, res) => {
+app.post("/api/upload", ensureUploadDir, upload.single('file'), (req, res) => {
   const {filename, path: filepath,  mimetype } = req.file
 
   const q = 'INSERT INTO files (filename, filepath, filetype) VALUES (?, ?, ?)';
