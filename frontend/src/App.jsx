@@ -15,6 +15,8 @@ function App() {
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  console.log("Files:", files);
+
 
   // backend url for hyperlink tag
   const API_URL = process.env.REACT_APP_BASE_URL;
@@ -168,6 +170,7 @@ function App() {
       }
 
       <div className='file-list'>
+
         {loading ? (<p>Loading......</p>) : files.length === 0 ? (<p>No Data Found</p>) : (
           files.map(file => (
             <div key={file.id} className='file-item'>

@@ -6,9 +6,8 @@ const mysql = require("mysql2");
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-// require('dotenv').config();
-require('dotenv').config({ path: '/home/sophin123/file-sharing/.env.development' })
-require('dotenv').config({ path: '/home/sophin123/file-sharing/.env.production' })
+require('dotenv').config();
+
 
 // Define upload directory path
 const UPLOAD_DIR = path.join(__dirname, "uploads");
@@ -93,7 +92,7 @@ const storage = multer.diskStorage({
 
 // Upload files in storage
 const upload = multer({storage, limits: {
-  fileSize: 10 * 1024 * 1024
+  fileSize: 100 * 1024 * 1024
 }})
 
 // Upload endpoint
@@ -113,11 +112,15 @@ app.get("/api/files", (req, res) => {
   const q = 'SELECT * FROM files ORDER BY uploaded_at DESC';
 
   db.query(q, (err, result) => {
+    if(err){
+      console.error("Database query error:", err);
+      return res.status(500).json({error: "Database error occurred"});
+    }
+
     if(result.length === 0){
       return res.status(200).json([]);
     }
-
-    if(err) return res.status(500).json(err);
+    
     res.status(200).json(result);
   })
 })
