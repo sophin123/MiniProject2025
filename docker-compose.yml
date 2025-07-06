@@ -4,6 +4,8 @@ services:
     container_name: api_backend
     ports:
       - "2000:2000"
+    volumes:
+      - ./backend:/app
     environment:
       MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_USER: ${MYSQL_USER}
@@ -14,9 +16,13 @@ services:
     depends_on:
       mysql:
         condition: service_healthy # Wait until MySQL is healthy
+    networks:
+      macvlan_net:
+        ipv4_address: 192.168.0.212
 
   mysql:
     image: mysql:8.0
+    container_name: mysql
     volumes:
       - file-share-mysql:/var/lib/mysql
     environment:
@@ -26,19 +32,25 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     healthcheck:
       # Add healthcheck
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
       interval: 5s
       timeout: 10s
       retries: 5
-
+    networks:
+      macvlan_net:
+        ipv4_address: 192.168.0.213
   client:
     build: ./frontend
     container_name: client_frontend
     stdin_open: true
     tty: true
+    networks:
+      macvlan_net:
+        ipv4_address: 192.168.0.211
 
   nginx:
     image: nginx:alpine
+    container_name: nginx
     ports:
       - "80:80"
     volumes:
@@ -46,8 +58,22 @@ services:
     depends_on:
       - client
       - backend
+    networks:
+      macvlan_net:
+        ipv4_address: 192.168.0.210
 
 volumes:
   file-share-mysql:
+  file-share-backend:
+
+networks:
+  macvlan_net:
+    driver: macvlan
+    driver_opts:
+      parent: eth0  # ← replace with your actual Wi-Fi interface (like wlp2s0)
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1
 
 
