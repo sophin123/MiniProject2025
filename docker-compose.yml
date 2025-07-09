@@ -1,0 +1,22 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: schedule-cleaing-frontend
+    # stdin_open: true
+    # tty: true
+    ports:
+      - "5173:5173"
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
+
+  nginx:
+    image: nginx:alpine
+    container_name: schedule-cleaning-nginx
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
