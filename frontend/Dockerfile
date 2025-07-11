@@ -17,9 +17,9 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # Expose Vite's default port
-EXPOSE 5173
+# EXPOSE 5173
 
-CMD ["yarn", "dev", "--host"]
+# CMD ["yarn", "dev", "--host"]
 
 # Uncomment below lines to build the app and serve it with nginx for ubuntu
 
