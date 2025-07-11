@@ -66,14 +66,17 @@ volumes:
   file-share-mysql:
   file-share-backend:
 
+
 networks:
   macvlan_net:
-    driver: macvlan
-    driver_opts:
-      parent: eth0  # ← replace with your actual Wi-Fi interface (like wlp2s0)
-    ipam:
-      config:
-        - subnet: 192.168.0.0/24
-          gateway: 192.168.0.1
+    external: true
 
-
+# networks:
+#   macvlan_net:
+#     driver: macvlan
+#     driver_opts:
+#       parent: eth0  # ← replace with your actual Wi-Fi interface (like wlp2s0)
+#     ipam:
+#       config:
+#         - subnet: 192.168.0.0/24
+#           gateway: 192.168.0.1
