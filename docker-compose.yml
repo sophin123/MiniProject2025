@@ -32,6 +32,9 @@ networks:
   macvlan_net:
     external: true
 
+# To create the macvlan network globally, run the following command:
+# docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=eth0 macvlan_net
+
 # networks:
 #   macvlan_net:
 #     driver: macvlan
