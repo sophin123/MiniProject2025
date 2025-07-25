@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN yarn install
+RUN npm install
 
 # Copy the rest of your application files
 COPY . .
@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 2000
 
 # Define the command to run your app
-CMD ["yarn", "start"]
+CMD ["npm", "start"]

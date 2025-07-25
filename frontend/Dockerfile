@@ -8,12 +8,12 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN yarn install
+RUN npm install
 
 # Copy the rest of your application files
 COPY . .
 
-RUN yarn run build
+RUN npm run build
 
 # Nginx container
 FROM nginx:alpine
