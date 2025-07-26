@@ -1,13 +1,17 @@
 services:
   backend:
-    build: ./backend
+    # If you want to build the backend from source, uncomment the build line
+    # build: ./backend
+
+    # If you want to use a pre-built image, uncomment the image line
+    image: sophin/fileshare-backend:latest
     container_name: api_backend
     ports:
       - "2000:2000"
     # Uncomment volumes if you want live reload during development
-    # volumes:
-    #   - ./backend:/app
-    #   - /app/node_modules
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     environment:
       MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_USER: ${MYSQL_USER}
@@ -46,7 +50,11 @@ services:
       retries: 5
 
   client:
-    build: ./frontend
+    # If you want to build the frontend from source, uncomment the build line
+    # build: ./frontend
+
+    # If you want to use a pre-built image, uncomment the image line
+    image: sophin/fileshare-frontend:latest
     container_name: client_frontend
     stdin_open: true
     tty: true

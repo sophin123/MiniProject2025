@@ -1,6 +1,10 @@
 services:
   backend:
-    build: ./backend
+    # If you want to build the backend from source, uncomment the build line
+    # build: ./backend
+
+    # If you want to use a pre-built image, uncomment the image line
+    image: sophin/fileshare-backend:latest
     container_name: api_backend
     ports:
       - "2000:2000"
@@ -51,7 +55,11 @@ services:
       macvlan_net:
         ipv4_address: 192.168.0.213
   client:
-    build: ./frontend
+    # If you want to build the frontend from source, uncomment the build line
+    # build: ./frontend
+
+    # If you want to use a pre-built image, uncomment the image line
+    image: sophin/fileshare-frontend:latest
     container_name: client_frontend
     stdin_open: true
     tty: true
