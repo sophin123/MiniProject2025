@@ -1,10 +1,10 @@
 services:
   backend:
     # If you want to build the backend from source, uncomment the build line
-    # build: ./backend
+    build: ./backend
 
     # If you want to use a pre-built image, uncomment the image line
-    image: sophin/fileshare-backend:latest
+    # image: sophin/fileshare-backend:latest
     container_name: api_backend
     ports:
       - "2000:2000"
@@ -12,6 +12,8 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+      - file-share-backend:/app/uploads
+
     environment:
       MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_USER: ${MYSQL_USER}
@@ -25,6 +27,8 @@ services:
 
   mysql:
     image: mysql:8.0
+    # Reason we explicitly set the .env file is to ensure that it uses the env variables defined in the .env file. Sometime
+    env_file: .env
     container_name: mysql
     volumes:
       - file-share-mysql:/var/lib/mysql
@@ -45,16 +49,18 @@ services:
           "-u${MYSQL_USER}",
           "-p${MYSQL_PASSWORD}",
         ]
-      interval: 5s
+      # Make sure to use interval 10s because for some reason the default 5s is not enough for MySQL to be healthy as a result backend and nagios will not start
+      interval: 10s
       timeout: 10s
       retries: 5
 
   client:
     # If you want to build the frontend from source, uncomment the build line
-    # build: ./frontend
+    build: ./frontend
 
     # If you want to use a pre-built image, uncomment the image line
-    image: sophin/fileshare-frontend:latest
+    # image: sophin/fileshare-frontend:latest
+
     container_name: client_frontend
     stdin_open: true
     tty: true

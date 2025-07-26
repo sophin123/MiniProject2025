@@ -12,6 +12,8 @@ services:
     # volumes:
     #   - ./backend:/app
     #   - /app/node_modules
+    volumes:
+      - file-share-backend:/app/uploads
     environment:
       MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_USER: ${MYSQL_USER}
@@ -28,6 +30,8 @@ services:
 
   mysql:
     image: mysql:8.0
+    # Reason we explicitly set the .env file is to ensure that it uses the env variables defined in the .env file. Sometime
+    env_file: .env
     container_name: mysql
     volumes:
       - file-share-mysql:/var/lib/mysql
@@ -45,10 +49,11 @@ services:
           "ping",
           "-h",
           "127.0.0.1",
-          "-u${MYSQL_USER}",
-          "-p${MYSQL_PASSWORD}",
+          "-uroot",
+          "-p${MYSQL_ROOT_PASSWORD}",
         ]
-      interval: 5s
+      # Make sure to use interval 10s because for some reason the default 5s is not enough for MySQL to be healthy as a result backend and nagios will not start
+      interval: 10s
       timeout: 10s
       retries: 5
     networks:
@@ -88,12 +93,15 @@ services:
 volumes:
   file-share-mysql:
   file-share-backend:
+
+# If you have already created macvlan network you can use it directly
 networks:
   macvlan_net:
     external: true
 # To create the macvlan network globally, run the following command:
 # docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=eth0 macvlan_net
 
+# or If you do not want macvlan globally and running for the first time, uncomment the following lines if you want to create a macvlan network
 # networks:
 #   macvlan_net:
 #     driver: macvlan

@@ -25,6 +25,8 @@ services:
 
   mysql:
     image: mysql:8.0
+    # Reason we explicitly set the .env file is to ensure that it uses the env variables defined in the .env file. Sometime
+    env_file: .env
     container_name: mysql
     volumes:
       - file-share-mysql:/var/lib/mysql
@@ -45,7 +47,8 @@ services:
           "-u${MYSQL_USER}",
           "-p${MYSQL_PASSWORD}",
         ]
-      interval: 5s
+      # Make sure to use interval 10s because for some reason the default 5s is not enough for MySQL to be healthy as a result backend and nagios will not start
+      interval: 10s
       timeout: 10s
       retries: 5
 
