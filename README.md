@@ -6,14 +6,14 @@ For now I want this project to keep within local network
 
 This project is built using nodes js, mysql, nginx and react
 
-<h1>Prerequisite</h1>
+<h1>Pre-requisite</h1>
 Make sure you have docker installed on your machine.
 You can follow docker official guide to install docker
-For ubunut -> https://docs.docker.com/engine/install/ubuntu/
+
+For ubuntu -> https://docs.docker.com/engine/install/ubuntu/
 For windows or mac -> simply download docker desktop
 
-To run this project via docker
-Steps
+<h1> Steps </h1>
 
 1. git clone project url with branch file-sharing
 
