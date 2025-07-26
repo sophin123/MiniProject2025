@@ -18,6 +18,9 @@ services:
     depends_on:
       mysql:
         condition: service_healthy # Wait until MySQL is healthy
+    networks:
+      macvlan_net:
+        ipv4_address: 192.168.0.212
 
   mysql:
     image: mysql:8.0
@@ -44,7 +47,9 @@ services:
       interval: 5s
       timeout: 10s
       retries: 5
-
+    networks:
+      macvlan_net:
+        ipv4_address: 192.168.0.213
   client:
     build: ./frontend
     container_name: client_frontend
@@ -54,6 +59,9 @@ services:
     # volumes:
     #   - ./frontend:/app
     #   - /app/node_modules
+    networks:
+      macvlan_net:
+        ipv4_address: 192.168.0.211
 
   nginx:
     image: nginx:alpine
@@ -65,7 +73,25 @@ services:
     depends_on:
       - client
       - backend
+    networks:
+      macvlan_net:
+        ipv4_address: 192.168.0.210
 
 volumes:
   file-share-mysql:
   file-share-backend:
+networks:
+  macvlan_net:
+    external: true
+# To create the macvlan network globally, run the following command:
+# docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=eth0 macvlan_net
+
+# networks:
+#   macvlan_net:
+#     driver: macvlan
+#     driver_opts:
+#       parent: eth0  # ← replace with your actual Wi-Fi interface (like wlp2s0)
+#     ipam:
+#       config:
+#         - subnet: 192.168.0.0/24
+#           gateway: 192.168.0.1

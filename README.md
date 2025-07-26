@@ -59,7 +59,9 @@ echo "REACT_APP_BASE_URL=/api" >> .env.production
 ```
 
 4. go back to your root directory i.e file-sharing
-5. Run following command
+5. Based on your environment you are using copy docker-compose-\*.yml to your docker-compose.yml as config is bit different on mac, win and linux due to network configuration.
+
+6. Run following command
 
 ```
 docker compose up
@@ -67,7 +69,7 @@ docker compose up
 
 <h1>Run them locally instead of running them in docker </h1>
 
-To run this project locally, make sure you have mysql running and also make sure you created a new user with localhost as domain and give access to fileshare database.
+To run this project locally, make sure you have mysql running and also make sure you created a new user with localhost as domain and give access to fileshare database or more easy all database _._ .
 for eg: 'username'@'localhost'
 
 1. git clone project url with branch file-sharing
@@ -88,8 +90,8 @@ MYSQL_ROOT_PASSWORD=testrootpassword
 MYSQL_DATABASE=testdatabase
 ```
 
-5. yarn install
-6. yarn start
+5. npm install
+6. npm start
 7. cd frontend
 8. create two .env files
 
@@ -107,7 +109,7 @@ REACT_APP_BASE_URL=/api
 # Paste this in .env.production
 ```
 
-10. yarn install
-11. yarn start
+10. npm install
+11. npm start
 
 Note: If you have issues connecting to mysql, make sure the database called fileshare already exist or create new one if not.
