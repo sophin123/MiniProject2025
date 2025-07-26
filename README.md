@@ -18,7 +18,7 @@ For windows or mac -> simply download docker desktop
 1. git clone project url with branch file-sharing
 
 ```
-git clone -b file-sharing <project-url>
+git clone -b file-sharing https://github.com/sophin123/MiniProject2025
 ```
 
 2. Make sure you are in file-sharing directory. Create new .env
