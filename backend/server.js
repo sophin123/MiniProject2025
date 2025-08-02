@@ -45,7 +45,7 @@ app.use("/api/upload", express.static("uploads"));
 app.use(express.json({ limit: '10mb' }));
 // app.use('/uploads', express.static('uploads'));
 // console.log("User:", process.env.MYSQL_USER);
-// console.log("Database :" , process.env.MYSQL_DATABASE);
+// console.log("Database :", process.env.MYSQL_DATABASE);
 
 // MySQL Connection
 const db = mysql.createPool({
@@ -57,6 +57,7 @@ const db = mysql.createPool({
   connectionLimit: 2,
   queueLimit: 0
 })
+
 
 db.getConnection((err, connection) => {
   if (err) {
