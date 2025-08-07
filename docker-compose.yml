@@ -5,7 +5,7 @@ services:
 
     # If you want to use a pre-built image, uncomment the image line
     # image: sophin/fileshare-backend:latest
-    container_name: api_backend
+    container_name: fileshare_backend
     ports:
       - "2000:2000"
     # Uncomment volumes if you want live reload during development
@@ -13,11 +13,12 @@ services:
       - ./backend:/app
       - /app/node_modules
       - file-share-backend:/app/uploads
-
+    env_file: .env
     environment:
       MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DB: ${MYSQL_DATABASE}
       NODE_ENV: production
       MAX_FILE_SIZE: 20971520
@@ -54,14 +55,14 @@ services:
       timeout: 10s
       retries: 5
 
-  client:
+  frontend:
     # If you want to build the frontend from source, uncomment the build line
     build: ./frontend
 
     # If you want to use a pre-built image, uncomment the image line
     # image: sophin/fileshare-frontend:latest
 
-    container_name: client_frontend
+    container_name: fileshare_frontend
     stdin_open: true
     tty: true
     # Uncomment volumes if you want live reload during development
@@ -77,7 +78,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - client
+      - frontend
       - backend
 
 volumes:

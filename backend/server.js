@@ -6,8 +6,10 @@ const mysql = require("mysql2");
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config();
+const authRoutes = require('./routes/auth.js');
+const jwt = require('jsonwebtoken');
 
+require('dotenv').config();
 
 // Define upload directory path
 const UPLOAD_DIR = path.join(__dirname, "uploads");
@@ -46,6 +48,9 @@ app.use(express.json({ limit: '10mb' }));
 // app.use('/uploads', express.static('uploads'));
 // console.log("User:", process.env.MYSQL_USER);
 // console.log("Database :", process.env.MYSQL_DATABASE);
+
+app.use('/api/auth', authRoutes);
+
 
 // MySQL Connection
 const db = mysql.createPool({
@@ -166,6 +171,23 @@ app.get('/api/download/:filename', (req, res) => {
   // This sets the Content-Disposition header
   res.download(file);
 });
+
+app.get('/api/dashboard', (req, res) => {
+  // This is a placeholder for your dashboard logic
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded token:", decoded);
+    res.status(200).json({ message: "Dashboard data", user: decoded });
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+});
+
 
 // Define a simple route
 app.get('/', (req, res) => {

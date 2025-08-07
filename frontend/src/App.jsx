@@ -1,23 +1,34 @@
-import { useEffect, useState } from 'react';
 import axios from 'axios'
-import Dashboard from './Pages/Dashboard/dashboard';
-// import Login from './Pages/Login/login';
+import Dashboard from './pages/dashboard/Dashboard';
+import AuthRoute from './auth/AuthRoute';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import PrivateRoute from './auth/PrivateRoute';
+import api from './api/api';
 
 
 function App() {
 
-  // backend url for hyperlink tag
-  const API_URL = process.env.REACT_APP_BASE_URL;
-  console.log("Checking api url", API_URL);
 
-  const api = axios.create({
-    baseURL: API_URL,
-  });
+  // const api = axios.create({
+  //   baseURL: API_URL,
+  // });
 
   return (
-    <>
-      <Dashboard api={api} />
-    </>
+    <Router>
+      <Routes>
+        <Route path="/auth/*" element={<AuthRoute api={api} />} />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute api={api}>
+              <Dashboard api={api} />
+            </PrivateRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/auth/login" replace />} />
+      </Routes>
+    </Router>
 
   );
 }

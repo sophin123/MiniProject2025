@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import "./dashboard.scss"
+import "./Dashboard.scss"
 
 import { FiEye, FiDownload } from 'react-icons/fi'
 import { FaTrash } from 'react-icons/fa'
+import { API_URL } from '../../api/api';
 
 export default function Dashboard({ api }) {
 
@@ -14,9 +15,6 @@ export default function Dashboard({ api }) {
     const [dragActive, setDragActive] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    console.log("Files:", files);
-    console.log("API", api.defaults.baseURL);
-
 
     useEffect(() => {
         // get all files from db
@@ -26,8 +24,8 @@ export default function Dashboard({ api }) {
 
     const fetchFiles = async () => {
         try {
-            const result = await api.get("/files")
-            setFiles(result.data)
+            const result = await api("/files", undefined, 'GET')
+            setFiles(result);
         } catch (error) {
             console.log("Error fetching Files", error);
         } finally {
@@ -48,7 +46,11 @@ export default function Dashboard({ api }) {
         const formData = new FormData();
         formData.append('file', selectedFile);
         try {
-            await api.post("/upload", formData, {
+            await api("/upload", formData, undefined, undefined, undefined, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                // This is used to track the upload progress
                 onUploadProgress: (progressEvent) => {
                     const percentageCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                     setUploadProgres(percentageCompleted);
@@ -67,7 +69,7 @@ export default function Dashboard({ api }) {
 
     const handleDelete = async (id, filename) => {
         try {
-            await api.delete(`/file/${id}`);
+            await api(`/file/${id}`, undefined, 'DELETE');
             showNotification(`${filename} Deleted Successfully`, 'success');
             fetchFiles();
 
@@ -107,6 +109,11 @@ export default function Dashboard({ api }) {
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             setSelectedFile(e.dataTransfer.files[0]);
         }
+    }
+
+    const handleLogout = () => {
+        localStorage.removeItem("authToken");
+        window.location.href = "/auth/login";
     }
 
     const getFileIcon = (filetype) => {
@@ -173,10 +180,10 @@ export default function Dashboard({ api }) {
                             <div className='icon-field'>
                                 <div className='view'>
                                     {/* rel attribute helps mitigate security threat called Tabnabbing. One of the security feature */}
-                                    <a href={`${api.defaults.baseURL}/upload/${file.filename}`} target='_blank' rel="noopener noreferrer" className='download-btn'><FiEye /> </a>
+                                    <a href={`${API_URL}/upload/${file.filename}`} target='_blank' rel="noopener noreferrer" className='download-btn'><FiEye /> </a>
                                 </div>
                                 <div className='download'>
-                                    <a href={`${api.defaults.baseURL}/download/${file.filename}`} download className='download-btn'><FiDownload /> </a>
+                                    <a href={`${API_URL}/download/${file.filename}`} download className='download-btn'><FiDownload /> </a>
                                 </div>
                                 <div className='trash'>
                                     <FaTrash onClick={() => handleDelete(file.id, file.filename)} color='red' />
@@ -188,6 +195,10 @@ export default function Dashboard({ api }) {
                     )
                 )}
             </div>
+
+            <footer>
+                <button onClick={handleLogout}>Logout</button>
+            </footer>
         </div >
     )
 }
