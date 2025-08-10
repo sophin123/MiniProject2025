@@ -1,9 +1,17 @@
+import axios from "axios";
 import Login from "./Login";
 import SignUp from "./SignUp";
 import { useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from 'react-router-dom';
+import api from "../api/api";
 
-export default function AuthRoute({ children, api }) {
+export const apiClient = axios.create({
+    baseURL: process.env.REACT_APP_BASE_URL,
+});
+
+console.log("Apli Client", apiClient.interceptors);
+
+export default function AuthRoute({ children }) {
     const [signupFormData, setSignupFormData] = useState({
         username: "",
         email: "",
@@ -31,6 +39,44 @@ export default function AuthRoute({ children, api }) {
     }, [])
 
 
+    //Configure axios interceptor to include token in requests
+    useEffect(() => {
+        const requestInterceptor = apiClient.interceptors.request.use(
+            (config) => {
+                const authToken = localStorage.getItem("authToken");
+                if (authToken) {
+                    config.headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                return config;
+            },
+            (error) => {
+                return Promise.reject(error);
+            }
+        )
+
+        const responseInterceptor = apiClient.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response?.status === 401) {
+                    // Handle unauthorized access, e.g., redirect to login
+                    localStorage.removeItem("authToken");
+                    setToken(null);
+                    setUser(null);
+                    navigate("/auth/login");
+                    alert("Session expired. Please log in again.");
+                }
+                return Promise.reject(error);
+            }
+        )
+
+        // Cleanup interceptors on component unmount
+        return () => {
+            apiClient.interceptors.request.eject(requestInterceptor);
+            apiClient.interceptors.response.eject(responseInterceptor);
+        };
+    }, [])
+
+    // Function to handle user signup
     const handleSignup = async () => {
         setLoading(true);
         console.log("FormData from handle SignUp", signupFormData);

@@ -16,7 +16,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/auth/*" element={<AuthRoute api={api} />} />
+        <Route path="/auth/*" element={<AuthRoute />} />
         <Route
           path="/dashboard"
           element={

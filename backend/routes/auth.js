@@ -53,7 +53,7 @@ const generateToken = (userId, email) => {
         throw new Error("JWT_SECRET is not defined in environment variables");
     }
 
-    return jwt.sign(payload, secret, { expiresIn: '6h' });
+    return jwt.sign(payload, secret, { expiresIn: '24h' });
 };
 
 const verifyToken = (req, res, next) => {

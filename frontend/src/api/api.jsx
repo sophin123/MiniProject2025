@@ -1,5 +1,6 @@
 
 import axios from 'axios';
+import { apiClient } from '../auth/AuthRoute';
 
 // backend url for hyperlink tag
 export const API_URL = process.env.REACT_APP_BASE_URL;
@@ -41,7 +42,7 @@ const api = async (endpoint, data, method = 'POST', useToken, debug = false, axi
             console.log("API config:", config)
         }
 
-        const response = await axios(config);
+        const response = await apiClient(config);
         return response.data
 
     } catch (err) {
