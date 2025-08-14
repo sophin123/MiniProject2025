@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
+const verifyToken = require('./verifyToken.js');
 
 const bcrypt = require("bcrypt");
 const { getDb } = require("../authdb.js")
@@ -55,23 +56,6 @@ const generateToken = (userId, email) => {
 
     return jwt.sign(payload, secret, { expiresIn: '24h' });
 };
-
-const verifyToken = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1];
-    if (!token) {
-        return res.status(401).json({ message: "No token provided. Access Denied" });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; // Attach user info to request object
-        next();
-
-    } catch (err) {
-        console.error("Token verification error:", err);
-        return res.status(401).json({ message: "Invalid token. Access Denied" });
-    }
-}
 
 router.get("/", (req, res) => {
     res.send({ message: "Auth API is working" });
@@ -206,6 +190,8 @@ router.post("/login", loginLimiter, async (req, res) => {
         }
 
         const user = users[0];
+
+        console.log("Username", user.username);
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
@@ -232,6 +218,20 @@ router.post("/logout", verifyToken, (req, res) => {
     res.json({ message: "Logout successful" });
 });
 
+router.get("/user", verifyToken, async (req, res) => {
+    try {
+        const authDb = await getDb();
+        const [users] = await authDb.query('SELECT * FROM users WHERE id = ?',
+            [req.user.userId]);
+        if (users.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json({ username: users[0] });
+    } catch (err) {
+        console.error("Username fetch error:", err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 
 // Protected route example - get user profile

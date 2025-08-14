@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const authRoutes = require('./routes/auth.js');
 const jwt = require('jsonwebtoken');
+const verifyToken = require('./routes/verifyToken.js');
 
 require('dotenv').config();
 
@@ -55,8 +56,8 @@ app.use('/api/auth', authRoutes);
 // MySQL Connection
 const db = mysql.createPool({
   host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
+  user: "root",
+  password: process.env.MYSQL_ROOT_PASSWORD,
   database: "fileshare",
   waitForConnections: true,
   connectionLimit: 2,
@@ -80,13 +81,33 @@ try {
   const createTableQuery = `CREATE TABLE
         if NOT EXISTS files (
         id INT PRIMARY KEY auto_increment,
+        user_id INT NOT NULL,
         filename VARCHAR(255) NOT NULL,
         filetype VARCHAR(50) NOT NULL,
         filepath VARCHAR(255) NOT NULL,
-        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        size INT NOT NULL,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES authentication.users(id) ON DELETE CASCADE
   )`
 
-  db.execute(createTableQuery)
+  // Create snippet table if not exists
+  const createSnippetTableQuery = `CREATE TABLE 
+        IF NOT EXISTS snippets (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        user_id INT NOT NULL,
+        text TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES authentication.users(id) ON DELETE CASCADE
+  )`;
+
+
+  db.execute(createTableQuery, (err, result) => {
+    if (err) {
+      console.error("Error creating files table:", err);
+    } else {
+      console.log("Files table created or already exists.");
+    }
+  });
 } catch (error) {
   console.error("Error creating table", error)
 
@@ -112,22 +133,25 @@ const upload = multer({
 })
 
 // Upload endpoint
-app.post("/api/upload", ensureUploadDir, upload.single('file'), (req, res) => {
-  const { filename, path: filepath, mimetype } = req.file
+app.post("/api/upload", verifyToken, ensureUploadDir, upload.single('file'), (req, res) => {
+  const { filename, path: filepath, mimetype, size } = req.file
 
-  const q = 'INSERT INTO files (filename, filepath, filetype) VALUES (?, ?, ?)';
+  const q = 'INSERT INTO files (user_id, filename, filepath, filetype, size) VALUES (?, ?, ?, ?, ?)';
 
-  db.query(q, [filename, filepath, mimetype], (err, result) => {
-    if (err) return res.status(500).json("Custome Error", err);
+  db.query(q, [req.user.userId, filename, filepath, mimetype, size], (err, result) => {
+    if (err) return res.status(500).json({ "Custom Error": err });
     res.status(200).json({ message: "File Uploaded Successfully" })
   })
 })
 
 // Get files endpoint
-app.get("/api/files", (req, res) => {
-  const q = 'SELECT * FROM files ORDER BY uploaded_at DESC';
+app.get("/api/files", verifyToken, (req, res) => {
+  const userId = req.user.userId;
 
-  db.query(q, (err, result) => {
+  console.log("Getting files based on user id", userId);
+  const q = 'SELECT * FROM files WHERE user_id = ? ORDER BY uploaded_at DESC';
+
+  db.query(q, [userId], (err, result) => {
     if (err) {
       console.error("Database query error:", err);
       return res.status(500).json({ error: "Database error occurred" });
@@ -144,9 +168,12 @@ app.get("/api/files", (req, res) => {
 // Delete file endpoint
 app.delete("/api/file/:id", (req, res) => {
 
+  console.log("Delete id is", req.params.id);
+
   const q = 'SELECT * FROM files WHERE id = ?';
   db.query(q, [req.params.id], (err, result) => {
     if (err) return res.status(500).json(err);
+
 
     const filename = result[0].filename;
     const filepath = result[0].filepath;
@@ -181,7 +208,7 @@ app.get('/api/dashboard', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded token:", decoded);
+    console.log("Decoded token:", decoded.userId);
     res.status(200).json({ message: "Dashboard data", user: decoded });
   } catch (err) {
     return res.status(401).json({ message: "Invalid token" });
@@ -193,6 +220,8 @@ app.get('/api/dashboard', (req, res) => {
 app.get('/', (req, res) => {
   res.send({ "message": 'Hello from the backend!' });
 });
+
+
 
 // App listening at specific port
 app.listen(PORT, () => {

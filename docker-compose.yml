@@ -31,6 +31,8 @@ services:
     # Reason we explicitly set the .env file is to ensure that it uses the env variables defined in the .env file. Sometime
     env_file: .env
     container_name: mysql
+    ports:
+      - "3306:3306"
     volumes:
       - file-share-mysql:/var/lib/mysql
     environment:

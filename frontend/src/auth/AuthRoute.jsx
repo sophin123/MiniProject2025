@@ -4,6 +4,7 @@ import SignUp from "./SignUp";
 import { useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import api from "../api/api";
+import { useUser } from "../ContextProvider";
 
 export const apiClient = axios.create({
     baseURL: process.env.REACT_APP_BASE_URL,
@@ -29,6 +30,8 @@ export default function AuthRoute({ children }) {
     const [token, setToken] = useState(null);
     const [user, setUser] = useState(null);
     const [error, setError] = useState("");
+
+    const { setUser: setContextUser } = useUser();
 
 
     useEffect(() => {
@@ -106,13 +109,15 @@ export default function AuthRoute({ children }) {
         console.log("FormData from handle Login", loginFormData,);
 
         try {
-            const response = await api('/auth/login', loginFormData, undefined, token, true)
+            const response = await api('/auth/login', loginFormData, undefined, token)
 
             console.log("Login Response:", response);
             const newToken = response.token;
             setToken(newToken)
             localStorage.setItem("authToken", newToken);
-            setUser(response.user);
+            setContextUser(response.user);
+
+            console.log("userdetails", response.user);
 
             if (response.user) {
                 navigate("/dashboard");
@@ -130,6 +135,11 @@ export default function AuthRoute({ children }) {
             setLoading(false);
         }
     }
+
+    // const getUserDetails = async () => {
+    //     try {
+    //         const response = await api('/auth/user', undefined, 'GET', token);
+    //         console.log("User Details:", response);
 
     return (
         <Routes>

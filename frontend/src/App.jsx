@@ -4,6 +4,7 @@ import AuthRoute from './auth/AuthRoute';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './auth/PrivateRoute';
 import api from './api/api';
+import { ContextProvider } from './ContextProvider';
 
 
 function App() {
@@ -14,21 +15,23 @@ function App() {
   // });
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/auth/*" element={<AuthRoute />} />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute api={api}>
-              <Dashboard api={api} />
-            </PrivateRoute>
-          }
-        />
+    <ContextProvider>
+      <Router>
+        <Routes>
+          <Route path="/auth/*" element={<AuthRoute />} />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute api={api}>
+                <Dashboard api={api} />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/auth/login" replace />} />
+        </Routes>
+      </Router>
+    </ContextProvider>
 
-        <Route path="*" element={<Navigate to="/auth/login" replace />} />
-      </Routes>
-    </Router>
 
   );
 }

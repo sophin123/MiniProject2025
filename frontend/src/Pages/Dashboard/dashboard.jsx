@@ -4,27 +4,50 @@ import "./Dashboard.scss"
 import { FiEye, FiDownload } from 'react-icons/fi'
 import { FaTrash } from 'react-icons/fa'
 import { API_URL } from '../../api/api';
+import api from '../../api/api';
+import { useUser } from '../../ContextProvider';
 
-export default function Dashboard({ api }) {
+
+export default function Dashboard() {
 
     const [files, setFiles] = useState([]);
+
+    console.log("Files output", files);
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false)
     const [uploadProgress, setUploadProgres] = useState(0);
     const [notification, setNotification] = useState({ show: false, message: '', type: '' })
     const [dragActive, setDragActive] = useState(false);
     const [loading, setLoading] = useState(true);
+    const fileSize = "100MB"
+    const [token, setToken] = useState(null);
 
+    const { user } = useUser();
+
+    const storedToken = localStorage.getItem("authToken");
 
     useEffect(() => {
-        // get all files from db
-        fetchFiles();
-    }, [])
+        if (storedToken) {
+            setToken(storedToken);
+        }
+    }, [storedToken])
+
+    useEffect(() => {
+        if (token) {
+            fetchFiles();
+        }
+    }, [token]);
+
 
 
     const fetchFiles = async () => {
+        const authToken = token;
+        console.log("Using auth token for fetchFiles", !!authToken);
         try {
-            const result = await api("/files", undefined, 'GET')
+            if (!authToken) {
+                throw { message: "Missing auth token" };
+            }
+            const result = await api("/files", undefined, 'GET', authToken)
             setFiles(result);
         } catch (error) {
             console.log("Error fetching Files", error);
@@ -45,8 +68,9 @@ export default function Dashboard({ api }) {
 
         const formData = new FormData();
         formData.append('file', selectedFile);
+
         try {
-            await api("/upload", formData, undefined, undefined, undefined, {
+            await api("/upload", formData, undefined, token, undefined, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -131,7 +155,9 @@ export default function Dashboard({ api }) {
 
     return (
         <div className={`App upload-section ${dragActive ? 'drag-active' : ''}`} onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}>
-            <h1>File Manager </h1>
+            <h1>LAN File Share </h1>
+            <i>Welcome {user?.username}</i>
+            <p>Maximum file that can be share is {fileSize}</p>
 
             {notification.show && (
                 <div className={`notification ${notification.type}`}>

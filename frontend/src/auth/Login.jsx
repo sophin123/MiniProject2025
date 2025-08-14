@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Login({ onSubmit, loginFormData, setLoginFormData, loading }) {
+function Login({ onSubmit, loginFormData, setLoginFormData, loading, user }) {
     const navigate = useNavigate();
 
     const [error, setError] = useState("");
