@@ -6,6 +6,7 @@ import { FaTrash } from 'react-icons/fa'
 import { API_URL } from '../../api/api';
 import api from '../../api/api';
 import { useUser } from '../../ContextProvider';
+import Snippet from '../../component/Snippet';
 
 
 export default function Dashboard() {
@@ -221,6 +222,8 @@ export default function Dashboard() {
                     )
                 )}
             </div>
+
+            <Snippet showNotification={showNotification} />
 
             <footer>
                 <button onClick={handleLogout}>Logout</button>

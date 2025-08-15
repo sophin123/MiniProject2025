@@ -108,6 +108,15 @@ try {
       console.log("Files table created or already exists.");
     }
   });
+
+  db.execute(createSnippetTableQuery, (err, result) => {
+    if (err) {
+      console.log("Error creating snippet tables".err);
+    } else {
+      console.log("Snippet table already exist");
+    }
+
+  })
 } catch (error) {
   console.error("Error creating table", error)
 
@@ -214,6 +223,59 @@ app.get('/api/dashboard', (req, res) => {
     return res.status(401).json({ message: "Invalid token" });
   }
 });
+
+// Snippet API
+
+// Get Snippet API
+app.get('/api/texts', verifyToken, (req, res) => {
+
+  const userId = req.user.userId;
+
+  const q = 'SELECT * FROM snippets WHERE user_id = ? ORDER BY created_at DESC';
+
+  db.query(q, [userId], (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ error: "Database error occurred" });
+    }
+
+    if (result.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    res.status(200).json(result);
+  })
+
+})
+
+
+// Upload snippet endpoint
+app.post("/api/textupload", verifyToken, (req, res) => {
+
+  const { text } = req.body;
+
+  const q = 'INSERT INTO snippets (user_id, text) VALUES (?, ?)';
+
+  db.query(q, [req.user.userId, text], (err, result) => {
+    if (err) return res.status(500).json({ "Custom Error": err });
+    res.status(200).json({ message: "Text Added Successfully" })
+  })
+})
+
+// Delete snippet endpoint
+app.delete("/api/text/:id", (req, res) => {
+
+  console.log("Delete id is", req.params.id);
+
+  const q = 'DELETE FROM snippets WHERE id = ?';
+
+  db.query(q, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json(err);
+
+
+    res.status(200).json({ message: `Deleted Successfully` })
+  })
+})
 
 
 // Define a simple route
