@@ -9,11 +9,6 @@ import { ContextProvider } from './ContextProvider';
 
 function App() {
 
-
-  // const api = axios.create({
-  //   baseURL: API_URL,
-  // });
-
   return (
     <ContextProvider>
       <Router>
