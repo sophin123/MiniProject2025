@@ -175,7 +175,7 @@ app.get("/api/files", verifyToken, (req, res) => {
 })
 
 // Delete file endpoint
-app.delete("/api/file/:id", (req, res) => {
+app.delete("/api/file/:id", verifyToken, (req, res) => {
 
   console.log("Delete id is", req.params.id);
 
@@ -263,7 +263,7 @@ app.post("/api/textupload", verifyToken, (req, res) => {
 })
 
 // Delete snippet endpoint
-app.delete("/api/text/:id", (req, res) => {
+app.delete("/api/text/:id", verifyToken, (req, res) => {
 
   console.log("Delete id is", req.params.id);
 

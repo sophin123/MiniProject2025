@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import api from '../api/api';
 import { FaTrash } from 'react-icons/fa';
 
-export default function Snippet({ showNotification }) {
+export default function Snippet({ showNotification, notification }) {
 
     const [text, setText] = useState("");
     const [getText, setGetText] = useState([]);
@@ -56,7 +56,7 @@ export default function Snippet({ showNotification }) {
 
     const handleTextDelete = async (id, text) => {
         try {
-            await api(`/text/${id}`, undefined, 'DELETE');
+            await api(`/text/${id}`, undefined, 'DELETE', token);
             showNotification(`${text} Deleted Successfully`, 'success');
             handleGetText();
         } catch (error) {
@@ -65,32 +65,34 @@ export default function Snippet({ showNotification }) {
         }
     }
 
-
     return (
-        <div>
-            <h1>Snippet Share</h1>
-            <form>
-                <input
-                    type="text"
-                    name="text"
-                    value={text}
-                    placeholder="Enter your text"
-                    id="snippet"
-                    onChange={handleTextChange}
-                    required
-                />
-            </form>
-            <input type='button' onClick={handleTextUpload} value="submit" />
-            {getText && getText.map((item) => {
-                return (
-                    <div id={item.id} key={item.id}>
-                        <p>{item.text}</p>
-                        <div className='trash'>
-                            <FaTrash onClick={() => handleTextDelete(item.id, item.text)} color='red' />
+        <div className='card'>
+            <div className='card-body'>
+                <h5 className='card-title mb-3'>Snippet Share</h5>
+                <form onSubmit={(e) => { e.preventDefault(); handleTextUpload(); }} className='d-flex gap-2'>
+                    <input
+                        type="text"
+                        name="text"
+                        value={text}
+                        placeholder="Enter your text"
+                        id="snippet"
+                        onChange={handleTextChange}
+                        required
+                        className='form-control'
+                    />
+                    <button type='submit' className='btn btn-primary'>Submit</button>
+                </form>
+                <div className='mt-3 list-group'>
+                    {getText && getText.map((item) => (
+                        <div id={item.id} key={item.id} className='list-group-item d-flex justify-content-between align-items-center'>
+                            <span>{item.text}</span>
+                            <button className='btn btn-sm btn-outline-danger' onClick={() => handleTextDelete(item.id, item.text)}>
+                                <FaTrash />
+                            </button>
                         </div>
-                    </div>
-                )
-            })}
+                    ))}
+                </div>
+            </div>
         </div>
     )
 }
