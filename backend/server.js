@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const authRoutes = require('./routes/auth.js');
 const jwt = require('jsonwebtoken');
-const verifyToken = require('./routes/verifyToken.js');
+const verifyToken = require('./files/verifyToken.js');
 
 require('dotenv').config();
 
@@ -142,15 +142,49 @@ const upload = multer({
 })
 
 // Upload endpoint
-app.post("/api/upload", verifyToken, ensureUploadDir, upload.single('file'), (req, res) => {
-  const { filename, path: filepath, mimetype, size } = req.file
+app.post("/api/upload", verifyToken, ensureUploadDir, upload.array('files', 10), (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: "No files uploaded" });
+  }
 
-  const q = 'INSERT INTO files (user_id, filename, filepath, filetype, size) VALUES (?, ?, ?, ?, ?)';
+  const uploadedFiles = [];
+  const errors = [];
 
-  db.query(q, [req.user.userId, filename, filepath, mimetype, size], (err, result) => {
-    if (err) return res.status(500).json({ "Custom Error": err });
-    res.status(200).json({ message: "File Uploaded Successfully" })
-  })
+  // Process each uploaded file
+  req.files.forEach((file) => {
+    const { filename, path: filepath, mimetype, size } = file;
+    
+    const q = 'INSERT INTO files (user_id, filename, filepath, filetype, size) VALUES (?, ?, ?, ?, ?)';
+    
+    db.query(q, [req.user.userId, filename, filepath, mimetype, size], (err, result) => {
+      if (err) {
+        errors.push({ filename, error: err.message });
+      } else {
+        uploadedFiles.push({ filename, success: true });
+      }
+      
+      // Check if all files have been processed
+      if (uploadedFiles.length + errors.length === req.files.length) {
+        if (errors.length === 0) {
+          res.status(200).json({ 
+            message: `${uploadedFiles.length} file(s) uploaded successfully`,
+            uploadedFiles 
+          });
+        } else if (uploadedFiles.length === 0) {
+          res.status(500).json({ 
+            error: "All files failed to upload",
+            errors 
+          });
+        } else {
+          res.status(207).json({ 
+            message: `${uploadedFiles.length} file(s) uploaded successfully, ${errors.length} file(s) failed`,
+            uploadedFiles,
+            errors 
+          });
+        }
+      }
+    });
+  });
 })
 
 // Get files endpoint

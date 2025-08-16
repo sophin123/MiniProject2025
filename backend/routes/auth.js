@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
-const verifyToken = require('./verifyToken.js');
+const verifyToken = require('../files/verifyToken.js')
 
 const bcrypt = require("bcrypt");
 const { getDb } = require("../authdb.js")

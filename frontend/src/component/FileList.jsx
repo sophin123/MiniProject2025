@@ -8,7 +8,7 @@ import { FiDownload, FiEye } from 'react-icons/fi';
 export default function FileList({ showNotification, notification }) {
 
     const [files, setFiles] = useState([]);
-    const [selectedFile, setSelectedFile] = useState(null);
+    const [selectedFiles, setSelectedFiles] = useState([]);
     const [isUploading, setIsUploading] = useState(false)
     const [uploadProgress, setUploadProgres] = useState(0);
     const [dragActive, setDragActive] = useState(false);
@@ -51,17 +51,18 @@ export default function FileList({ showNotification, notification }) {
     }
 
     const handleUpload = async () => {
-        if (!selectedFile) {
-            showNotification("Please select a file first", "error");
+        if (selectedFiles.length === 0) {
+            showNotification("Please select files first", "error");
             return;
         }
 
         setIsUploading(true);
         setUploadProgres(0);
 
-
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        selectedFiles.forEach(file => {
+            formData.append('files', file);
+        });
 
         try {
             await api("/upload", formData, undefined, token, undefined, {
@@ -74,8 +75,8 @@ export default function FileList({ showNotification, notification }) {
                     setUploadProgres(percentageCompleted);
                 }
             });
-            setSelectedFile(null);
-            showNotification("File Uploaded Successfully!", 'success');
+            setSelectedFiles([]);
+            showNotification(`${selectedFiles.length} file(s) uploaded successfully!`, 'success');
             fetchFiles();
         } catch (error) {
             showNotification('Upload Failed');
@@ -115,10 +116,20 @@ export default function FileList({ showNotification, notification }) {
         e.stopPropagation();
         setDragActive(false);
 
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setSelectedFile(e.dataTransfer.files[0]);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            setSelectedFiles(Array.from(e.dataTransfer.files));
         }
     }
+
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
 
     const getFileIcon = (filetype) => {
         if (filetype.includes('image')) return '🖼️';
@@ -143,15 +154,31 @@ export default function FileList({ showNotification, notification }) {
                     <p className="mb-2">Drag & drop files anywhere on the page or</p>
                     <label className='btn btn-outline-primary'>
                         Browse Files
-                        <input className='d-none' type='file' onChange={(e) => setSelectedFile(e.target.files[0])} />
+                        <input className='d-none' type='file' multiple onChange={(e) => setSelectedFiles(Array.from(e.target.files))} />
                     </label>
                 </div>
 
-                {selectedFile && (
-                    <div className='d-flex align-items-center gap-3 mb-3'>
-                        <p className='mb-0'>{selectedFile.name}</p>
+                {selectedFiles.length > 0 && (
+                    <div className='mb-3'>
+                        <div className='mb-2'>
+                            <strong>Selected Files ({selectedFiles.length}):</strong>
+                        </div>
+                        <div className='mb-2'>
+                            {selectedFiles.map((file, index) => (
+                                <div key={index} className='d-flex align-items-center gap-2 mb-1'>
+                                    <span className='small'>{file.name}</span>
+                                    <button 
+                                        className='btn btn-sm btn-outline-danger' 
+                                        onClick={() => setSelectedFiles(selectedFiles.filter((_, i) => i !== index))}
+                                        title='Remove file'
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                         <button className='btn btn-primary' onClick={handleUpload} disabled={isUploading}>
-                            {isUploading ? 'Uploading...' : 'Upload'}
+                            {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length} file(s)`}
                         </button>
                     </div>
                 )}
@@ -176,7 +203,7 @@ export default function FileList({ showNotification, notification }) {
                                             {getFileIcon(file.filetype)} {file.filename}
                                         </div>
                                         <div className='small text-secondary'>
-                                            {file.filetype} • {new Date(file.uploaded_at).toLocaleString()}
+                                            {file.filetype} • {formatFileSize(file.size)} • {new Date(file.uploaded_at).toLocaleString()}
                                         </div>
                                     </div>
                                     <div className='d-flex align-items-center gap-2'>
