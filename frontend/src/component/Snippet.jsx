@@ -42,8 +42,8 @@ export default function Snippet({ showNotification, notification }) {
 
     const handleTextUpload = async () => {
         try {
-            await api("/textupload", { text }, undefined, token);
-            showNotification("File Uploaded Successfully!", 'success');
+            await api("/texts", { text }, undefined, token);
+            showNotification("Text Added Successfully!", 'success');
             setText(""); // Clear the text field after successful submission
         } catch (error) {
             showNotification('Text Add Failed');
@@ -56,7 +56,7 @@ export default function Snippet({ showNotification, notification }) {
 
     const handleTextDelete = async (id, text) => {
         try {
-            await api(`/text/${id}`, undefined, 'DELETE', token);
+            await api(`/texts/${id}`, undefined, 'DELETE', token);
             showNotification(`${text} Deleted Successfully`, 'success');
             handleGetText();
         } catch (error) {

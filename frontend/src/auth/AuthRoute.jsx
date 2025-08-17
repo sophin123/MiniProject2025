@@ -136,11 +136,6 @@ export default function AuthRoute({ children }) {
         }
     }
 
-    // const getUserDetails = async () => {
-    //     try {
-    //         const response = await api('/auth/user', undefined, 'GET', token);
-    //         console.log("User Details:", response);
-
     return (
         <Routes>
             <Route path="/login" element={<Login onSubmit={handleLogin} setLoginFormData={setLoginFormData} loginFormData={loginFormData} />} />

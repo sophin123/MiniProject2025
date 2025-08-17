@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from 'react'
-import { useUser } from '../ContextProvider';
 import api, { API_URL } from '../api/api';
 import { FaTrash } from 'react-icons/fa';
 import { FiDownload, FiEye } from 'react-icons/fi';
@@ -13,10 +12,8 @@ export default function FileList({ showNotification, notification }) {
     const [uploadProgress, setUploadProgres] = useState(0);
     const [dragActive, setDragActive] = useState(false);
     const [loading, setLoading] = useState(true);
-    const fileSize = "100MB"
+    const fileSize = "3GB"
     const [token, setToken] = useState(null);
-
-    const { user } = useUser();
 
     const storedToken = localStorage.getItem("authToken");
 
@@ -65,7 +62,7 @@ export default function FileList({ showNotification, notification }) {
         });
 
         try {
-            await api("/upload", formData, undefined, token, undefined, {
+            await api("/files", formData, undefined, token, undefined, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -88,7 +85,7 @@ export default function FileList({ showNotification, notification }) {
 
     const handleDelete = async (id, filename) => {
         try {
-            await api(`/file/${id}`, undefined, 'DELETE', token);
+            await api(`/files/${id}`, undefined, 'DELETE', token);
             showNotification(`${filename} Deleted Successfully`, 'success');
             fetchFiles();
 
@@ -123,11 +120,11 @@ export default function FileList({ showNotification, notification }) {
 
     const formatFileSize = (bytes) => {
         if (bytes === 0) return '0 Bytes';
-        
+
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        
+
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
@@ -167,8 +164,8 @@ export default function FileList({ showNotification, notification }) {
                             {selectedFiles.map((file, index) => (
                                 <div key={index} className='d-flex align-items-center gap-2 mb-1'>
                                     <span className='small'>{file.name}</span>
-                                    <button 
-                                        className='btn btn-sm btn-outline-danger' 
+                                    <button
+                                        className='btn btn-sm btn-outline-danger'
                                         onClick={() => setSelectedFiles(selectedFiles.filter((_, i) => i !== index))}
                                         title='Remove file'
                                     >
@@ -207,8 +204,8 @@ export default function FileList({ showNotification, notification }) {
                                         </div>
                                     </div>
                                     <div className='d-flex align-items-center gap-2'>
-                                        <a href={`${API_URL}/upload/${file.filename}`} target='_blank' rel="noopener noreferrer" className='btn btn-sm btn-outline-secondary' title='View'><FiEye /></a>
-                                        <a href={`${API_URL}/download/${file.filename}`} download className='btn btn-sm btn-outline-success' title='Download'><FiDownload /></a>
+                                        <a href={`${API_URL}/files/view/${file.filename}`} target='_blank' rel="noopener noreferrer" className='btn btn-sm btn-outline-secondary' title='View'><FiEye /></a>
+                                        <a href={`${API_URL}/files/download/${file.filename}`} download className='btn btn-sm btn-outline-success' title='Download'><FiDownload /></a>
                                         <button className='btn btn-sm btn-outline-danger' onClick={() => handleDelete(file.id, file.filename)} title='Delete'>
                                             <FaTrash />
                                         </button>
