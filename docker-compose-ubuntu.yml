@@ -5,20 +5,20 @@ services:
 
     # If you want to use a pre-built image, uncomment the image line
     image: sophin/fileshare-backend:latest
-    container_name: api_backend
+    container_name: fileshare_backend
     ports:
       - "2000:2000"
     # Uncomment volumes if you want live reload during development
-    # volumes:
-    #   - ./backend:/app
-    #   - /app/node_modules
     volumes:
+      - ./backend:/app
+      - /app/node_modules
       - file-share-backend:/app/uploads
+    env_file: .env
     environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DB: ${MYSQL_DATABASE}
+      # MYSQL_HOST: ${MYSQL_HOST}
+      # MYSQL_USER: ${MYSQL_USER}
+      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # MYSQL_DB: ${MYSQL_DATABASE}
       NODE_ENV: production
       MAX_FILE_SIZE: 20971520
     depends_on:
@@ -33,8 +33,11 @@ services:
     # Reason we explicitly set the .env file is to ensure that it uses the env variables defined in the .env file. Sometime
     env_file: .env
     container_name: mysql
+    ports:
+      - "3306:3306"
     volumes:
       - file-share-mysql:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -59,13 +62,13 @@ services:
     networks:
       macvlan_net:
         ipv4_address: 192.168.0.213
-  client:
+  frontend:
     # If you want to build the frontend from source, uncomment the build line
     # build: ./frontend
 
     # If you want to use a pre-built image, uncomment the image line
     image: sophin/fileshare-frontend:latest
-    container_name: client_frontend
+    container_name: fileshare_frontend
     stdin_open: true
     tty: true
     # Uncomment volumes if you want live reload during development
