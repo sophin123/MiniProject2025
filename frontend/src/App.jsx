@@ -1,4 +1,3 @@
-import axios from 'axios'
 import Dashboard from './pages/dashboard/Dashboard';
 import AuthRoute from './auth/AuthRoute';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
