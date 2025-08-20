@@ -1,23 +1,17 @@
 
-import axios from 'axios';
 import { apiClient } from '../auth/AuthRoute';
 
 // backend url for hyperlink tag
 export const API_URL = process.env.REACT_APP_BASE_URL;
 console.log("Checking api url", API_URL);
 
-export const custom_axios = axios.create({
-    baseURL: API_URL,
-});
-
-
 const api = async (endpoint, data, method = 'POST', useToken, debug = false, axiosOptions = {}) => {
 
-    console.log(`Auth API request ${API_URL}${endpoint}`);
+    console.log(`Auth API request (${API_URL}) ${endpoint}`);
     try {
         const config = {
             method,
-            url: `${API_URL}${endpoint}`,
+            url: `${endpoint}`,
             headers: {
                 ...(axiosOptions.headers || {}),
             },
