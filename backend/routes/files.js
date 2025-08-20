@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const verifyToken = require('../files/verifyToken.js');
 const queries = require('../files/queries.js');
+const { getFileshareDb } = require('../filesharedb.js');
 
 // File Storage Configuration
 const storage = multer.diskStorage({
@@ -43,28 +44,26 @@ const ensureUploadDir = (req, res, next) => {
 };
 
 // Get files endpoint
-router.get("/", verifyToken, (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   const userId = req.user.userId;
 
+  const fileshareDb = await getFileshareDb();
   console.log("Getting files based on user id", userId);
 
-  req.db.query(queries.GET_FILES_BY_USER, [userId], (err, result) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ error: "Database error occurred" });
-    }
-
-    if (result.length === 0) {
+  try {
+    const [rows] = await fileshareDb.query(queries.GET_FILES_BY_USER, [userId]);
+    if (rows.length === 0) {
       return res.status(200).json([]);
     }
-
-    res.status(200).json(result);
-  });
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error("Database query error:", err);
+    return res.status(500).json({ error: "Database error occurred" });
+  }
 });
 
 // Upload endpoint
 router.post("/", verifyToken, ensureUploadDir, (req, res, next) => {
-
   upload.array('files', 10)(req, res, err => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
@@ -82,7 +81,7 @@ router.post("/", verifyToken, ensureUploadDir, (req, res, next) => {
 });
 
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: "No files uploaded" });
   }
@@ -92,18 +91,18 @@ router.post("/", (req, res) => {
 
   let processedCount = 0;
 
-  req.files.forEach((file) => {
+  const fileshareDb = await getFileshareDb();
+
+  req.files.forEach(async (file) => {
     const { filename, path: filepath, mimetype, size } = file;
 
-    req.db.query(queries.INSERT_FILE, [req.user.userId, filename, filepath, mimetype, size], (err, result) => {
+    try {
+      await fileshareDb.query(queries.INSERT_FILE, [req.user.userId, filename, filepath, mimetype, size]);
+      uploadedFiles.push({ filename, success: true });
+    } catch (err) {
+      errors.push({ filename, error: err.message });
+    } finally {
       processedCount++;
-
-      if (err) {
-        errors.push({ filename, error: err.message });
-      } else {
-        uploadedFiles.push({ filename, success: true });
-      }
-
       if (processedCount === req.files.length) {
         if (errors.length === 0) {
           res.status(200).json({
@@ -123,30 +122,39 @@ router.post("/", (req, res) => {
           });
         }
       }
-    });
+    }
   });
 })
 
 // Delete file endpoint
-router.delete("/:id", verifyToken, (req, res) => {
+router.delete("/:id", verifyToken, async (req, res) => {
   console.log("Delete id is", req.params.id);
 
-  req.db.query(queries.GET_FILE_BY_ID, [req.params.id], (err, result) => {
+  const fileshareDb = await getFileshareDb();
+
+  try {
+    const [rows] = await fileshareDb.query(queries.GET_FILE_BY_ID, [req.params.id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    const { filename, filepath } = rows[0];
+
+    try {
+      await fs.promises.unlink(filepath);
+    } catch (err) {
+      console.error("File deletion error", err);
+      return res.status(500).json({ error: "Failed to delete file from server" });
+    }
+    // Proceed to delete from database
+    await fileshareDb.query(queries.DELETE_FILE_BY_ID, [req.params.id]);
+    res.status(200).json({ message: `${filename} deleted successfully` });
+  } catch (err) {
     if (err) return res.status(500).json(err);
-
-    const filename = result[0].filename;
-    const filepath = result[0].filepath;
-    fs.unlink(filepath, (err) => {
-      if (err) console.error(err);
-
-      req.db.query(queries.DELETE_FILE_BY_ID, [req.params.id], (err, result) => {
-        if (err) return res.status(500).json(err);
-
-        res.status(200).json({ message: `${filename} Deleted Successfully` });
-      });
-    });
-  });
+  }
 });
+
 
 // Download endpoint
 router.get('/download/:filename', (req, res) => {

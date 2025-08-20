@@ -2,44 +2,48 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../files/verifyToken.js');
 const queries = require('../files/queries.js');
+const { getFileshareDb } = require("../filesharedb.js")
 
 // Get Snippet API
-router.get('/', verifyToken, (req, res) => {
+router.get('/', verifyToken, async (req, res) => {
   const userId = req.user.userId;
-
-  req.db.query(queries.GET_SNIPPETS_BY_USER, [userId], (err, result) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ error: "Database error occurred" });
-    }
-
-    if (result.length === 0) {
+  try {
+    const fileshareDb = await getFileshareDb();
+    const [rows] = await fileshareDb.query(queries.GET_SNIPPETS_BY_USER, [userId]);
+    if (rows.length === 0) {
       return res.status(200).json([]);
     }
-
-    res.status(200).json(result);
-  });
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error("Database query error:", err);
+    return res.status(500).json({ error: "Database error occurred" });
+  }
 });
 
 // Upload snippet endpoint
-router.post("/", verifyToken, (req, res) => {
+router.post("/", verifyToken, async (req, res) => {
   const { text } = req.body;
 
-  req.db.query(queries.INSERT_SNIPPET, [req.user.userId, text], (err, result) => {
-    if (err) return res.status(500).json({ "Custom Error": err });
+  try {
+    const fileshareDb = await getFileshareDb();
+    await fileshareDb.query(queries.INSERT_SNIPPET, [req.user.userId, text]);
     res.status(200).json({ message: "Text Added Successfully" });
-  });
+  } catch (err) {
+    return res.status(500).json({ "Custom Error": err });
+  }
 });
 
 // Delete snippet endpoint
-router.delete("/:id", verifyToken, (req, res) => {
+router.delete("/:id", verifyToken, async (req, res) => {
   console.log("Delete id is", req.params.id);
 
-  req.db.query(queries.DELETE_SNIPPET_BY_ID, [req.params.id], (err, result) => {
-    if (err) return res.status(500).json(err);
-
+  try {
+    const fileshareDb = await getFileshareDb();
+    await fileshareDb.query(queries.DELETE_SNIPPET_BY_ID, [req.params.id]);
     res.status(200).json({ message: `Deleted Successfully` });
-  });
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 });
 
 module.exports = router;

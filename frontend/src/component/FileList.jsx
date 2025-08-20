@@ -128,17 +128,17 @@ export default function FileList({ showNotification, notification }) {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    const getFileIcon = (filetype) => {
-        if (filetype.includes('image')) return '🖼️';
-        if (filetype.includes('pdf')) return '📄';
-        if (filetype.includes('document') || filetype.includes('word')) return '📝';
-        if (filetype.includes('spreadsheet') || filetype.includes('excel')) return '📊';
-        if (filetype.includes('video')) return '🎬';
-        if (filetype.includes('audio')) return '🎵';
-        if (filetype.includes('zip') || filetype.includes('compressed')) return '🗜️';
-        if (filetype.includes('text')) return '📝';
-        return '📁';
-    };
+    // const getFileIcon = (filetype) => {
+    //     if (filetype.includes('image')) return '🖼️';
+    //     if (filetype.includes('pdf')) return '📄';
+    //     if (filetype.includes('document') || filetype.includes('word')) return '📝';
+    //     if (filetype.includes('spreadsheet') || filetype.includes('excel')) return '📊';
+    //     if (filetype.includes('video')) return '🎬';
+    //     if (filetype.includes('audio')) return '🎵';
+    //     if (filetype.includes('zip') || filetype.includes('compressed')) return '🗜️';
+    //     if (filetype.includes('text')) return '📝';
+    //     return '📁';
+    // };
 
 
     return (
@@ -197,7 +197,7 @@ export default function FileList({ showNotification, notification }) {
                                 <div key={file.id} className='list-group-item d-flex justify-content-between align-items-start'>
                                     <div className='me-3'>
                                         <div className='fw-semibold'>
-                                            {getFileIcon(file.filetype)} {file.filename}
+                                            {/* {getFileIcon(file.filetype)} {file.filename} */}
                                         </div>
                                         <div className='small text-secondary'>
                                             {file.filetype} • {formatFileSize(file.size)} • {new Date(file.uploaded_at).toLocaleString()}

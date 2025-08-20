@@ -1,5 +1,4 @@
 const mysql = require("mysql2/promise");
-
 const dbName = "authentication"
 
 require("dotenv").config();
@@ -15,11 +14,11 @@ let dbReadyPromise;
 
 async function InitializeAuthDb() {
     try {
-        const initialConnection = await mysql.createConnection(dbConfig)
+        // const initialConnection = await mysql.createConnection(dbConfig)
 
-        await initialConnection.query(`CREATE DATABASE IF NOT EXISTS ${dbName}`);
-        console.log(`Database ${dbName} is ready`);
-        await initialConnection.end();
+        // await initialConnection.query(`CREATE DATABASE IF NOT EXISTS ${dbName}`);
+        // console.log(`Database ${dbName} is ready`);
+        // await initialConnection.end();
 
         authDb = mysql.createPool({ ...dbConfig, database: dbName, waitForConnections: true, connectionLimit: 2, queueLimit: 0 })
 

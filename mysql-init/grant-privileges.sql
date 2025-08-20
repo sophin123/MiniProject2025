@@ -1,0 +1,5 @@
+GRANT ALL PRIVILEGES ON authentication.* TO 'sophin123'@'%';
+GRANT ALL PRIVILEGES ON fileshare.* TO 'sophin123'@'%';
+GRANT ALL PRIVILEGES ON *.* TO 'sophin123'@'%' WITH GRANT OPTION;
+
+FLUSH PRIVILEGES;
