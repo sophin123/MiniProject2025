@@ -87,7 +87,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - client
+      - frontend
       - backend
     networks:
       macvlan_net:
