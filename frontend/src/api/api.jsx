@@ -3,11 +3,15 @@ import { apiClient } from '../auth/AuthRoute';
 
 // backend url for hyperlink tag
 export const API_URL = process.env.REACT_APP_BASE_URL;
-console.log("Checking api url", API_URL);
+console.log("Temporary API URL", API_URL);
+
 
 const api = async (endpoint, data, method = 'POST', useToken, debug = false, axiosOptions = {}) => {
 
-    console.log(`Auth API request (${API_URL}) ${endpoint}`);
+    console.log(`API request (${endpoint}`);
+    console.log(`API base url`, apiClient.defaults.baseURL);
+    console.log(`Just API ${api}`)
+
     try {
         const config = {
             method,

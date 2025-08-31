@@ -61,7 +61,6 @@ router.get("/", (req, res) => {
     res.send({ message: "Auth API is working" });
 })
 
-
 router.post("/signup", signupLimiter, async (req, res) => {
     const { username, email, phonenumber, password } = req.body;
     try {

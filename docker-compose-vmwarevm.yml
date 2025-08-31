@@ -1,4 +1,5 @@
-services:
+# the reason i created another compose yml file separate for vmware fusion is because bridged over Wi‑Fi. macvlan generally doesn’t work on Wi‑Fi because APs won’t pass frames from multiple MACs behind the same station:
+services:  
   backend:
     # If you want to build the backend from source, uncomment the build line
     build: ./backend
@@ -60,25 +61,17 @@ services:
     # Use default Docker bridge network; reachable via VM IP and published ports
   frontend:
     # If you want to build the frontend from source, uncomment the build line
-    build:
-      context: ./frontend
-      # dockerfile: Dockerfile.dev # for development
-      dockerfile: Dockerfile # for production
-
-    
+    build: ./frontend
 
     # If you want to use a pre-built image, uncomment the image line
     # image: sophin/fileshare-frontend:latest
     container_name: fileshare_frontend
     stdin_open: true
     tty: true
-    # Uncomment ports if you want to use the development server
-    # ports:
-    #   - "3000:3000"
     # Uncomment volumes if you want live reload during development
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
     # Use default Docker bridge network; reachable via VM IP and published ports
 
   nginx:

@@ -25,8 +25,6 @@ function App() {
         </Routes>
       </Router>
     </ContextProvider>
-
-
   );
 }
 

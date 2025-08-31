@@ -10,7 +10,9 @@ export const apiClient = axios.create({
     baseURL: process.env.REACT_APP_BASE_URL,
 });
 
-console.log("Apli Client", apiClient.interceptors);
+console.log("Api Client", apiClient.interceptors)
+console.log("API Client Base URL", apiClient.defaults.baseURL);
+
 
 export default function AuthRoute({ children }) {
     const [signupFormData, setSignupFormData] = useState({
