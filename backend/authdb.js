@@ -5,8 +5,8 @@ require("dotenv").config();
 
 const dbConfig = {
     host: process.env.MYSQL_HOST,
-    user: process.env.MYSQL_USER || "root",
-    password: process.env.MYSQL_PASSWORD || process.env.MYSQL_ROOT_PASSWORD
+    user: "root",
+    password: process.env.MYSQL_ROOT_PASSWORD
 }
 
 let authDb;
