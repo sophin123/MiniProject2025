@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_HUB_USER = "sophin"
+        FRONTEND_IMAGE = "fileshare-frontend"
+        BACKEND_IMAGE = "fileshare-backend"
+        VERSION = "v1.0.2"   // later you can automate versioning
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'file-sharing', url: 'https://github.com/sophin123/MiniProject2025'
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                sh 'docker compose build'
+            }
+        }
+
+        stage('Tag Images') {
+            steps {
+                sh """
+                    docker tag ${FRONTEND_IMAGE}:latest ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
+                    docker tag ${BACKEND_IMAGE}:latest ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
+                """
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Images') {
+            steps {
+                sh """
+                    docker push ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
+                    docker push ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
+                """
+            }
+        }
+    }
+}
