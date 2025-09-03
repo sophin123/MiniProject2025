@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'jenkins-docker-agent'  // use official Docker CLI image
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     
     environment {
         DOCKER_HUB_USER = "sophin"
@@ -7,8 +12,15 @@ pipeline {
         BACKEND_IMAGE = "fileshare-backend"
         VERSION = "v1.0.2"   // later you can automate versioning
     }
+    
 
     stages {
+        stage('Prepare Docker Agent') {
+            steps {
+                sh 'docker build -t jenkins-docker-agent -f Dockerfile.agent .'
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'file-sharing', url: 'https://github.com/sophin123/MiniProject2025'
