@@ -24,36 +24,42 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Check Docker Permission'){
             steps {
-                sh 'docker compose build'
+                sh 'docker ps -a'
             }
         }
 
-        stage('Tag Images') {
-            steps {
-                sh """
-                    docker tag ${FRONTEND_IMAGE}:latest ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
-                    docker tag ${BACKEND_IMAGE}:latest ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
-                """
-            }
-        }
+        // stage('Build Docker Images') {
+        //     steps {
+        //         sh 'docker compose build'
+        //     }
+        // }
 
-        stage('Login to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-                }
-            }
-        }
+        // stage('Tag Images') {
+        //     steps {
+        //         sh """
+        //             docker tag ${FRONTEND_IMAGE}:latest ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
+        //             docker tag ${BACKEND_IMAGE}:latest ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
+        //         """
+        //     }
+        // }
 
-        stage('Push Images') {
-            steps {
-                sh """
-                    docker push ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
-                    docker push ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
-                """
-            }
-        }
+        // stage('Login to Docker Hub') {
+        //     steps {
+        //         withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+        //             sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+        //         }
+        //     }
+        // }
+
+        // stage('Push Images') {
+        //     steps {
+        //         sh """
+        //             docker push ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
+        //             docker push ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
+        //         """
+        //     }
+        // }
     }
 }
