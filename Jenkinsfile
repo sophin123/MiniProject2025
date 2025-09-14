@@ -26,6 +26,8 @@ pipeline {
 
         stage('Check Docker Permission'){
             steps {
+                sh 'whoami'
+                sh 'ls -l /var/run/docker.sock'
                 sh 'docker ps -a'
             }
         }
