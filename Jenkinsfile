@@ -27,7 +27,7 @@ pipeline {
         stage('Check Docker Permission'){
             steps {
                 sh 'exit'
-                sh 'getent group docker-host'
+                sh 'getent group docker'
                 sh 'whoami'
                 sh 'ls -l /var/run/docker.sock'
                 sh 'docker ps -a'
