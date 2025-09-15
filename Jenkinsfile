@@ -24,46 +24,46 @@ pipeline {
             }
         }
 
-        stage('Check Docker Permission'){
+        // stage('Check Docker Permission'){
+        //     steps {
+        //         sh 'exit'
+        //         sh 'getent group docker'
+        //         sh 'whoami'
+        //         sh 'ls -l /var/run/docker.sock'
+        //         sh 'docker ps -a'
+        //     }
+        // }
+
+        stage('Build Docker Images') {
             steps {
-                sh 'exit'
-                sh 'getent group docker'
-                sh 'whoami'
-                sh 'ls -l /var/run/docker.sock'
-                sh 'docker ps -a'
+                sh 'docker compose build'
             }
         }
 
-        // stage('Build Docker Images') {
-        //     steps {
-        //         sh 'docker compose build'
-        //     }
-        // }
+        stage('Tag Images') {
+            steps {
+                sh """
+                    docker tag ${FRONTEND_IMAGE}:latest ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
+                    docker tag ${BACKEND_IMAGE}:latest ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
+                """
+            }
+        }
 
-        // stage('Tag Images') {
-        //     steps {
-        //         sh """
-        //             docker tag ${FRONTEND_IMAGE}:latest ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
-        //             docker tag ${BACKEND_IMAGE}:latest ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
-        //         """
-        //     }
-        // }
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                }
+            }
+        }
 
-        // stage('Login to Docker Hub') {
-        //     steps {
-        //         withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-        //             sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-        //         }
-        //     }
-        // }
-
-        // stage('Push Images') {
-        //     steps {
-        //         sh """
-        //             docker push ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
-        //             docker push ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
-        //         """
-        //     }
-        // }
+        stage('Push Images') {
+            steps {
+                sh """
+                    docker push ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
+                    docker push ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
+                """
+            }
+        }
     }
 }
