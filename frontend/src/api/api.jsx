@@ -8,9 +8,20 @@ console.log("Temporary API URL", API_URL);
 
 const api = async (endpoint, data, method = 'POST', useToken, debug = false, axiosOptions = {}) => {
 
-    console.log(`API request (${endpoint}`);
+    console.log(`API request (${endpoint})`);
     console.log(`API base url`, apiClient.defaults.baseURL);
-    console.log(`Just API ${api}`)
+    // Log full URL specifically for signup to verify env/source
+    try {
+        const base = apiClient?.defaults?.baseURL || '';
+        const path = endpoint?.startsWith('/') ? endpoint : `/${endpoint}`;
+        const fullUrl = `${base}${path}`;
+        if (path === '/auth/signup') {
+            console.log('Signup full URL:', fullUrl);
+            console.log('Env base URL:', process.env.REACT_APP_BASE_URL, 'NODE_ENV:', process.env.NODE_ENV);
+        }
+    } catch (_) {
+        // no-op: logging should never break requests
+    }
 
     try {
         const config = {

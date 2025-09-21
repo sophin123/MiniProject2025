@@ -36,7 +36,7 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                sh 'docker compose build'
+                sh 'docker compose -f docker-compose.dev.yml build'
             }
         }
 

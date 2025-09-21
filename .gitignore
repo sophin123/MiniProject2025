@@ -22,3 +22,5 @@ docker-compose-backup.yml
 mysql-container.session.sql
 
 .vscode/
+
+ENVIRONMENT_SETUP.md
