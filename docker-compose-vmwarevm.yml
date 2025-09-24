@@ -1,5 +1,6 @@
-# the reason i created another compose yml file separate for vmware fusion is because bridged over Wi‑Fi. macvlan generally doesn’t work on Wi‑Fi because APs won’t pass frames from multiple MACs behind the same station:
-services:  
+# Note: Running sites using vm ip address will not work as expected. Alwasy forward your 80 ports through ports forwarding
+
+services:
   backend:
     # If you want to build the backend from source, uncomment the build line
     build: ./backend
@@ -14,23 +15,26 @@ services:
       - ./backend:/app
       - /app/node_modules
       - file-share-backend:/app/uploads
-    env_file: .env
+    env_file: .env.development
     environment:
-      # MYSQL_HOST: ${MYSQL_HOST}
-      # MYSQL_USER: ${MYSQL_USER}
-      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      # MYSQL_DB: ${MYSQL_DATABASE}
-      NODE_ENV: production
+      NODE_ENV: development
       MAX_FILE_SIZE: 20971520
     depends_on:
       mysql:
         condition: service_healthy # Wait until MySQL is healthy
-    # Use default Docker bridge network; reachable via VM IP and published ports
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    # Use custom network for better service isolation
 
   mysql:
     image: mysql:8.0
     # Reason we explicitly set the .env file is to ensure that it uses the env variables defined in the .env file. Sometime
-    env_file: .env
+    env_file: .env.development
     container_name: fileshare_mysql
     ports:
       - "3306:3306"
@@ -58,21 +62,35 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    # Use default Docker bridge network; reachable via VM IP and published ports
+    restart: unless-stopped
   frontend:
     # If you want to build the frontend from source, uncomment the build line
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev # for development
+      args:
+        REACT_APP_BASE_URL: /api
 
     # If you want to use a pre-built image, uncomment the image line
     # image: sophin/fileshare-frontend:latest
     container_name: fileshare_frontend
     stdin_open: true
     tty: true
+    # Uncomment ports if you want to use the development server
+    ports:
+      - "3000:3000"
+    env_file: .env.development
     # Uncomment volumes if you want live reload during development
-    # volumes:
-    #   - ./frontend:/app
-    #   - /app/node_modules
-    # Use default Docker bridge network; reachable via VM IP and published ports
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   nginx:
     image: nginx:alpine
@@ -84,10 +102,14 @@ services:
     depends_on:
       - frontend
       - backend
-    # Use default Docker bridge network; reachable via VM IP and published ports
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
 volumes:
   file-share-mysql:
   file-share-backend:
-
-# Using default network; macvlan removed for Wi‑Fi bridged environments
