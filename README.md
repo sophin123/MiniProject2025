@@ -4,7 +4,7 @@ I have not put this sites available publicly due to security issues.
 
 For now I want this project to keep within local network
 
-This project is built using nodes js, mysql, nginx and react
+This project is built using react, nodes, mysql, nginx and docker
 
 <h1>Pre-requisite</h1>
 Make sure you have docker installed on your machine.
@@ -21,95 +21,89 @@ For windows or mac -> simply download docker desktop
 git clone -b file-sharing https://github.com/sophin123/MiniProject2025
 ```
 
-2. Make sure you are in file-sharing directory. Create new .env
+2. Create .env.development and .env.production file in  your root directory.
 
 ```
-touch .env
+touch .env.development
+touch .env.production
 ```
 
-3. Paste the following with the details in your .env you want to configure your mysql with
+3. Paste the following with the details in your .env.development
 
 ```
-MYSQL_HOST=testhost
-MYSQL_USER=testuser
-MYSQL_PASSWORD=testpassword
-MYSQL_ROOT_PASSWORD=testrootpassword
-MYSQL_DATABASE=testdatabase
-```
+# Development Environment Configuration
 
-2. cd to frontend and create two files
+# Database Configuration
+MYSQL_HOST=mysql
+MYSQL_USER=yourusername
+MYSQL_PASSWORD=yourpassword
+MYSQL_ROOT_PASSWORD=yourrootpassword
+MYSQL_DATABASE=fileshare
 
-```
-touch .env.development .env.production
-```
 
-3. Paste the following
+# Application Configuration
+NODE_ENV=development
+PORT=2000
+MAX_FILE_SIZE=20971520
 
-```
+# Frontend Configuration
 REACT_APP_BASE_URL=http://localhost:2000/api
-# Paste this in .env.development
-or run the command
-echo "REACT_APP_BASE_URL=http://localhost:2000/api" >> .env.development
+REACT_APP_ENV=development
 
+# Security (Development only - use weak passwords for local dev)
+JWT_SECRET=yoursecretkey
+
+# File Upload Configuration
+UPLOAD_DIR=/app/uploads
+MAX_UPLOAD_SIZE_GB=3
+
+```
+
+4. Paste the following with the details in your .env.production
+
+```
+# Production Environment Configuration
+
+# Database Configuration
+MYSQL_HOST=mysql
+MYSQL_USER=yourusername
+MYSQL_PASSWORD=yourpassword
+MYSQL_ROOT_PASSWORD=yourrootpassword
+MYSQL_DATABASE=fileshare
+
+# Application Configuration
+NODE_ENV=production
+PORT=2000
+
+# Frontend Configuration
 REACT_APP_BASE_URL=/api
-# Paste this in .env.production
-or run the command
-echo "REACT_APP_BASE_URL=/api" >> .env.production
+REACT_APP_ENV=production
+
+# Security (Use strong, unique passwords in production)
+JWT_SECRET=yoursecretkey
+
+# File Upload Configuration
+UPLOAD_DIR=/app/uploads
+MAX_UPLOAD_SIZE_GB=3
 
 ```
 
-4. go back to your root directory i.e file-sharing
-5. Based on your environment you are using copy docker-compose-\*.yml to your docker-compose.yml as config is bit different on mac, win and linux due to network configuration.
-
-6. Run following command
-
+5. To run project for development purpose. 
 ```
-docker compose up
+docker-compose --env-file .env.development -f docker-compose.dev.yml up -d --build
 ```
 
-<h1>Run them locally instead of running them in docker </h1>
+6. To run project for production purpose. Make sure you have published your build image in docker hub and configure on docker-compose.prod.yml
+For eg:
+backend:
+    image: sophin/fileshare-backend:v1.0.2
 
-To run this project locally, make sure you have mysql running and also make sure you created a new user with localhost as domain and give access to fileshare database or more easy all database _._ .
-for eg: 'username'@'localhost'
-
-1. git clone project url with branch file-sharing
-2. cd backend
-3. create file
+7. Run the following command. It will download the image and run them
 
 ```
-touch .env
+docker-compose --env-file .env.production -f docker-compose.prod.yml up -d --build
 ```
 
-4. Paste the following with the details in your .env you want to configure your mysql with
-
-```
-MYSQL_HOST=testhost
-MYSQL_USER=testuser
-MYSQL_PASSWORD=testpassword
-MYSQL_ROOT_PASSWORD=testrootpassword
-MYSQL_DATABASE=testdatabase
-```
-
-5. npm install
-6. npm start
-7. cd frontend
-8. create two .env files
-
-```
-touch .env.development .env.production
-```
-
-9. Paste the following
-
-```
-REACT_APP_BASE_URL=http://localhost:2000/api
-# Paste this in .env.development
-
-REACT_APP_BASE_URL=/api
-# Paste this in .env.production
-```
-
-10. npm install
-11. npm start
-
-Note: If you have issues connecting to mysql, make sure the database called fileshare already exist or create new one if not.
+8. To access your sites, 
+In windows and mac, you can basically use your nginx ports for eg: localhost:80 
+For ubuntu and vmware, you need to forward port or you can use your host ip address with 80 port. For eg 192.168.0.24:80
