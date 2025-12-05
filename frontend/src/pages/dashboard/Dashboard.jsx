@@ -26,32 +26,32 @@ export default function Dashboard() {
 
     return (
         <>
-        <nav className="navbar navbar-light bg-light mb-4 shadow-sm">
-            <div className="container">
-                <span className="navbar-brand mb-0 h1">LAN File Share</span>
-                <div className="ms-auto d-flex align-items-center gap-3">
-                    <span className="text-muted">Welcome {user?.username}</span>
-                    <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>Logout</button>
+            <nav className="navbar navbar-light bg-light mb-4 shadow-sm">
+                <div className="container">
+                    <span className="navbar-brand mb-0 h1">LAN File Share v2</span>
+                    <div className="ms-auto d-flex align-items-center gap-3">
+                        <span className="text-muted">Welcome {user?.username}</span>
+                        <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>Logout</button>
+                    </div>
+                </div>
+            </nav>
+            <div className="container py-0 pb-4">
+                <div className="row g-4">
+                    <div className="col-12">
+                        {notification.show && (
+                            <div className={`alert alert-${notification.type === 'error' ? 'danger' : notification.type}`} role="alert">
+                                {notification.message}
+                            </div>
+                        )}
+                    </div>
+                    <div className="col-lg-7">
+                        <FileList showNotification={showNotification} notification={notification} />
+                    </div>
+                    <div className="col-lg-5">
+                        <Snippet showNotification={showNotification} notification={notification} />
+                    </div>
                 </div>
             </div>
-        </nav>
-        <div className="container py-0 pb-4">
-            <div className="row g-4">
-                <div className="col-12">
-                    {notification.show && (
-                        <div className={`alert alert-${notification.type === 'error' ? 'danger' : notification.type}` } role="alert">
-                            {notification.message}
-                        </div>
-                    )}
-                </div>
-                <div className="col-lg-7">
-                    <FileList showNotification={showNotification} notification={notification} />
-                </div>
-                <div className="col-lg-5">
-                    <Snippet showNotification={showNotification} notification={notification} />
-                </div>
-            </div>
-        </div>
         </>
 
     )

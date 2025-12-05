@@ -5,7 +5,8 @@ pipeline {
         DOCKER_HUB_USER = "sophin"
         FRONTEND_IMAGE = "fileshare-frontend"
         BACKEND_IMAGE = "fileshare-backend"
-        VERSION = "v1.0.2"   // later you can automate versioning
+        VERSION = "v1.0"
+        BUILD_TAG = "${VERSION}.${env.BUILD_NUMBER}"
     }
 
     // stages {
@@ -43,8 +44,8 @@ pipeline {
         stage('Tag Images') {
             steps {
                 sh """
-                    docker tag ${FRONTEND_IMAGE}:latest ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
-                    docker tag ${BACKEND_IMAGE}:latest ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
+                    docker tag ${FRONTEND_IMAGE}:latest ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${BUILD_TAG}
+                    docker tag ${BACKEND_IMAGE}:latest ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${BUILD_TAG}
                 """
             }
         }
@@ -60,8 +61,20 @@ pipeline {
         stage('Push Images') {
             steps {
                 sh """
-                    docker push ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${VERSION}
-                    docker push ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${VERSION}
+                    docker push ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${BUILD_TAG}
+                    docker push ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${BUILD_TAG}
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            steps {
+                sh 'docker logout'
+                sh """
+                    docker rmi ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${BUILD_TAG} || true
+                    docker rmi ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${BUILD_TAG} || true
                 """
             }
         }

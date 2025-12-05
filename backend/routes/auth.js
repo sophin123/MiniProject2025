@@ -10,7 +10,7 @@ const { getDb } = require("../authdb.js")
 // Rate limiting middleware
 const signupLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // limit each IP to 5 signup requests per windowMs
+    max: 500, // limit each IP to 5 signup requests per windowMs
     message: {
         error: "Too many signup attempts from this IP, please try again after 15 minutes."
     },
@@ -90,7 +90,7 @@ router.post("/signup", signupLimiter, async (req, res) => {
         }
 
         if (validateErrors.length > 0) {
-            return res.status(400).json({ message: "Validation errors", errors: validateErrors });
+            return res.status(400).json({ message: "Validation errors", errors: validateErrors.join("\n") });
         }
 
         const authDb = await getDb();
