@@ -27,7 +27,6 @@ services:
       macvlan_net:
         ipv4_address: 192.168.0.221
 
-
 networks:
   macvlan_net:
     external: true

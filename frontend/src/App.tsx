@@ -1,5 +1,4 @@
-import { useState } from "react";
-import "./App.css";
+import { useState, useEffect } from "react";
 
 interface Assignment {
   id: string;
@@ -9,21 +8,39 @@ interface Assignment {
 }
 
 function App() {
-  const person = ["Sophin", "Pramila", "Steven"];
+
+  const people = ["Pramila", "Steven", "Sophin"];
   const tasks = ["Vacuum", "Kitchen", "Bathroom"];
-  const [completedTask, setCompletedTask] = useState(new Set());
+  
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [currentWeek, setCurrentWeek] = useState(getWeekStart(new Date()));
+
+  // Load completed tasks from memory on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('completedTasks');
+    if (stored) {
+      try {
+        setCompletedTasks(new Set(JSON.parse(stored)));
+      } catch (e) {
+        console.error('Error loading data:', e);
+      }
+    }
+  }, []);
+
+  // Save completed tasks to memory whenever they change
+  useEffect(() => {
+    localStorage.setItem('completedTasks', JSON.stringify(Array.from(completedTasks)));
+  }, [completedTasks]);
 
   function getWeekStart(date: Date): Date {
     const d = new Date(date);
     const day = d.getDay();
-
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-
-    return new Date(d.setDate(diff));
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
   }
 
-  // Format date for display
   function formatDate(date: Date): string {
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -32,58 +49,63 @@ function App() {
     });
   }
 
-  // Get week number for task rotation
-  function getWeekNumber(date: Date): number {
-    const startOfYear = new Date(date.getFullYear(), 0, 1);
-
-    const pastDaysOfYear = (date.getTime() - startOfYear.getTime()) / 86400000;
-
-    return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+  // Calculate a stable rotation index based on days since a fixed reference point
+  function getRotationIndex(date: Date): number {
+    // Use a fixed reference date (e.g., Jan 1, 2024)
+    const referenceDate = new Date(2024, 0, 1);
+    referenceDate.setHours(0, 0, 0, 0);
+    
+    // Calculate days difference
+    const daysDiff = Math.floor((date.getTime() - referenceDate.getTime()) / 86400000);
+    
+    // Calculate weeks since reference date
+    const weeksSinceReference = Math.floor(daysDiff / 7);
+    
+    return weeksSinceReference;
   }
 
-  // Togle Task Completion
   function toggleTask(taskId: string): void {
-    const newCompletedTask = new Set(completedTask);
-
-    if (newCompletedTask.has(taskId)) {
-      newCompletedTask.delete(taskId);
+    const newCompletedTasks = new Set(completedTasks);
+    if (newCompletedTasks.has(taskId)) {
+      newCompletedTasks.delete(taskId);
     } else {
-      newCompletedTask.add(taskId);
+      newCompletedTasks.add(taskId);
     }
-
-    console.log("new completed task", newCompletedTask);
-    setCompletedTask(newCompletedTask);
+    setCompletedTasks(newCompletedTasks);
   }
 
-  // Generate assignments for current week
+  function isCurrentWeek(): boolean {
+    const today = getWeekStart(new Date());
+    return currentWeek.getTime() === today.getTime();
+  }
+
+  function goToToday(): void {
+    setCurrentWeek(getWeekStart(new Date()));
+  }
+
   const getWeeklyAssignments = (): Assignment[] => {
-    const weekNum = getWeekNumber(currentWeek);
-
+    const rotationIndex = getRotationIndex(currentWeek);
     return tasks.map((task, index) => {
-      const personIndex = (weekNum + index) % person.length;
-      const taskId = `${formatDate(currentWeek)} - ${task}`;
-
+      const personIndex = (rotationIndex + index) % people.length;
+      const taskId = `${formatDate(currentWeek)}-${task}`;
       return {
         id: taskId,
-        person: person[personIndex],
+        person: people[personIndex],
         task,
-        hasCompleted: completedTask.has(taskId),
+        hasCompleted: completedTasks.has(taskId),
       };
     });
   };
 
   const assignments = getWeeklyAssignments();
   const completedCount = assignments.filter((a) => a.hasCompleted).length;
-  console.log("Completed Count", completedCount);
-  const progressBarPercentage =
-    completedCount > 0 ? (completedCount / assignments.length) * 100 : 0;
+  const progressPercentage = completedCount > 0 ? (completedCount / assignments.length) * 100 : 0;
 
-  const groupAssignments: Record<string, Assignment[]> = assignments.reduce(
+  const groupedAssignments: Record<string, Assignment[]> = assignments.reduce(
     (acc, assignment) => {
       if (!acc[assignment.person]) {
         acc[assignment.person] = [];
       }
-
       acc[assignment.person].push(assignment);
       return acc;
     },
@@ -96,114 +118,140 @@ function App() {
     setCurrentWeek(newDate);
   };
 
+  const getWeekEndDate = (): string => {
+    const endDate = new Date(currentWeek);
+    endDate.setDate(endDate.getDate() + 6);
+    return formatDate(endDate);
+  };
+
   return (
-    <>
+    <div className="min-vh-100 bg-light">
       <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
         rel="stylesheet"
       />
 
-      {/* Header */}
-      <div className="card-header bg-primary text-white">
-        <h1 className="h3 mb-0 text-center">🧹 Cleaning Schedule</h1>
-        <p className="text-center mb-0 mt-3 opacity-75">
-          Bathroom • Vacuum • Kitchen
-        </p>
-      </div>
-
-      {/* Week Navigation */}
-      <div className="card-body border-bottom-0">
-        <div className="row align-items-center mt-2">
-          <div className="col-4 text-start">
-            <button
-              className="btn btn-outline-primary "
-              onClick={() => changeWeek(-1)}
-            >
-              {" "}
-              ← Previous Week
-            </button>
+      <div className="container py-4">
+        <div className="card shadow-sm">
+          {/* Header */}
+          <div className="card-header bg-primary text-white py-4">
+            <h1 className="h3 mb-2 text-center">🧹 Weekly Cleaning Schedule</h1>
+            <p className="text-center mb-0 opacity-75 small">
+              Bathroom • Vacuum • Kitchen
+            </p>
           </div>
 
-          <div className="col-4 text-center">
-            <h4 className="mb-0">{formatDate(currentWeek)}</h4>
-          </div>
+          {/* Week Navigation */}
+          <div className="card-body border-bottom">
+            <div className="row align-items-center g-2">
+              <div className="col-12 col-md-4 text-center text-md-start">
+                <button
+                  className="btn btn-outline-primary btn-sm w-100 w-md-auto"
+                  onClick={() => changeWeek(-1)}
+                >
+                  ← Previous
+                </button>
+              </div>
 
-          <div className="col-4 text-end">
-            <button
-              className="btn btn-outline-primary "
-              onClick={() => changeWeek(1)}
-            >
-              {" "}
-              Next Week →
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="card-body">
-        <div className="d-flex justify-content-between mb-2 mt-2">
-          <span>
-            Progess: {completedCount} / {assignments.length} tasks completed
-          </span>
-          <span>{Math.round(progressBarPercentage)}%</span>
-        </div>
-
-        <div className="progress" style={{ height: "10px" }}>
-          <div
-            className="progress-bar bg-success"
-            role="progressbar"
-            style={{ width: `${progressBarPercentage}%` }}
-            aria-valuenow={progressBarPercentage}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          ></div>
-        </div>
-      </div>
-
-      {/* Assignment */}
-      <div className="card-body">
-        <div className="row">
-          {Object.entries(groupAssignments).map(([person, tasks]) => (
-            <div key={person} className="col-md-4 mb-4 mt-4">
-              <div className="card h-100 border-2">
-                <div className="card-header ">
-                  <div className="card-title text-center">
-                    <span className="badge me-2">👤</span>
-                    {person}
-                  </div>
-                </div>
-                <div className="card-body">
-                  {tasks.map((assignment) => (
-                    <div key={assignment.id} className="mb-3">
-                      <div className="form-check d-flex gap-2">
-                        <input
-                          type="checkbox"
-                          id={assignment.id}
-                          className="form-check-input fs-5"
-                          checked={assignment.hasCompleted}
-                          onChange={() => toggleTask(assignment.id)}
-                        />
-                        <label
-                          htmlFor={assignment.id}
-                          className={`form-check-label fs-5 ${
-                            assignment.hasCompleted
-                              ? "text-muted text-decoration-line-through"
-                              : ""
-                          }`}
-                        >
-                          <strong>{assignment.task}</strong>
-                        </label>
-                      </div>
-                    </div>
-                  ))}
+              <div className="col-12 col-md-4 text-center">
+                <div className="d-flex flex-column align-items-center gap-2">
+                  <h5 className="mb-0">
+                    {formatDate(currentWeek)} - {getWeekEndDate()}
+                  </h5>
+                  {isCurrentWeek() && (
+                    <span className="badge bg-success">Current Week</span>
+                  )}
+                  {!isCurrentWeek() && (
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={goToToday}
+                    >
+                      Go to Today
+                    </button>
+                  )}
                 </div>
               </div>
+
+              <div className="col-12 col-md-4 text-center text-md-end">
+                <button
+                  className="btn btn-outline-primary btn-sm w-100 w-md-auto"
+                  onClick={() => changeWeek(1)}
+                >
+                  Next →
+                </button>
+              </div>
             </div>
-          ))}
+          </div>
+
+          {/* Progress Bar */}
+          <div className="card-body border-bottom">
+            <div className="d-flex justify-content-between mb-2 align-items-center">
+              <span className="small">
+                <strong>Progress:</strong> {completedCount} / {assignments.length} completed
+              </span>
+              <span className="badge bg-primary">{Math.round(progressPercentage)}%</span>
+            </div>
+            <div className="progress" style={{ height: "12px" }}>
+              <div
+                className="progress-bar bg-success progress-bar-striped"
+                role="progressbar"
+                style={{ width: `${progressPercentage}%` }}
+                aria-valuenow={progressPercentage}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              ></div>
+            </div>
+          </div>
+
+          {/* Assignments */}
+          <div className="card-body">
+            <div className="row g-3">
+              {Object.entries(groupedAssignments).map(([person, personTasks]) => (
+                <div key={person} className="col-12 col-md-6 col-lg-4">
+                  <div className="card h-100 border-primary">
+                    <div className="card-header bg-light">
+                      <h6 className="card-title mb-0 text-center">
+                        <span className="me-2">👤</span>
+                        <strong>{person}</strong>
+                      </h6>
+                    </div>
+                    <div className="card-body">
+                      <ul className="list-unstyled mb-0">
+                        {personTasks.map((assignment) => (
+                          <li key={assignment.id} className="mb-3">
+                            <div className="form-check">
+                              <input
+                                type="checkbox"
+                                id={assignment.id}
+                                className="form-check-input"
+                                checked={assignment.hasCompleted}
+                                onChange={() => toggleTask(assignment.id)}
+                                style={{ cursor: 'pointer' }}
+                              />
+                              <label
+                                htmlFor={assignment.id}
+                                className={`form-check-label ${
+                                  assignment.hasCompleted
+                                    ? "text-muted text-decoration-line-through"
+                                    : ""
+                                }`}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                {assignment.task}
+                              </label>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
