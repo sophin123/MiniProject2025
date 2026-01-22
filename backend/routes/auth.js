@@ -10,7 +10,7 @@ const { getDb } = require("../authdb.js")
 // Rate limiting middleware
 const signupLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // limit each IP to 5 signup requests per windowMs
+    max: 5, // limit each IP to 5 signup requests per windowMs
     message: {
         error: "Too many signup attempts from this IP, please try again after 15 minutes."
     },
@@ -90,7 +90,7 @@ router.post("/signup", signupLimiter, async (req, res) => {
         }
 
         if (validateErrors.length > 0) {
-            return res.status(400).json({ message: "Validation errors", errors: validateErrors.join("\n") });
+            return res.status(400).json({ message: "Validation errors", errors: validateErrors });
         }
 
         const authDb = await getDb();
@@ -147,11 +147,18 @@ router.post("/signup", signupLimiter, async (req, res) => {
                 }
             });
 
-        } catch (err) { }
+        } catch (innerErr) {
+            console.error("Database transaction error:", innerErr);
+            try {
+                await connection.rollback();
+                await connection.release();
+            } catch (cleanupErr) {
+                console.error("Cleanup error:", cleanupErr);
+            }
+            throw innerErr;
+        }
     } catch (err) {
         console.error("Signup error:", err);
-        await connection.rollback();
-        await connection.release();
 
         // Handle specific database errors
         if (err.code === 'ER_DUP_ENTRY') {
@@ -160,7 +167,10 @@ router.post("/signup", signupLimiter, async (req, res) => {
             });
         }
 
-        res.status(500).json({ message: "Internal server error. Please try again later." });
+        res.status(500).json({
+            message: "An error occurred during signup. Please try again later.",
+            ...(process.env.NODE_ENV === 'development' && { error: err.message })
+        });
 
     }
 })

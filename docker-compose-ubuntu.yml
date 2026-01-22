@@ -4,7 +4,7 @@ services:
     # build: ./backend
 
     # If you want to use a pre-built image, uncomment the image line
-    image: sophin/fileshare-backend:v1.0.2
+    image: sophin/fileshare-backend:v1.0.3
     container_name: fileshare_backend
     ports:
       - "2000:2000"
