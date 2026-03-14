@@ -9,7 +9,7 @@ interface Assignment {
 
 function App() {
 
-  const people = ["Pramila", "Steven", "Sophin"];
+  const people = ["Lakas Maharjan", "Steven", "Pramila", "Sophin"];
   const tasks = ["Vacuum", "Kitchen", "Bathroom"];
   
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
