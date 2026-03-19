@@ -32,8 +32,43 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/', mainRoutes);
 
 
+const http = require('http');
+const { WebSocketServer } = require('ws');
+
+// Create an HTTP server so we can attach a WebSocket server to it
+const server = http.createServer(app);
+
+// Create a WebSocket server that will handle /ws upgrades
+const wss = new WebSocketServer({ noServer: true });
+
+wss.on('connection', (ws, request) => {
+  console.log('WebSocket client connected:', request.socket.remoteAddress);
+  ws.send(JSON.stringify({ message: 'WebSocket connection established' }));
+
+  ws.on('message', (message) => {
+    console.log('WebSocket message received:', message.toString());
+    // Echo back to client
+    ws.send(`Echo: ${message}`);
+  });
+
+  ws.on('close', () => {
+    console.log('WebSocket client disconnected');
+  });
+});
+
+// Handle upgrade requests (required for WebSocket proxying)
+server.on('upgrade', (request, socket, head) => {
+  if (request.url === '/ws') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
 // App listening at specific port
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 

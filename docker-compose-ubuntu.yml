@@ -80,7 +80,7 @@ services:
     image: nginx:alpine
     container_name: nginx
     ports:
-      - "80:80"
+      - "8081:80" # Changing the port from 80 to 8080 to avoid conflicts with gitlab-runner which also uses port 80
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:

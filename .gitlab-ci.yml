@@ -1,0 +1,5 @@
+test_trigger:
+  script:
+    - echo "Trigger received successfully"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
