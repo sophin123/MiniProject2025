@@ -1,5 +1,10 @@
-test_trigger:
+stages:
+  - build
+
+build_job:
+  stage: build
   script:
-    - echo "Trigger received successfully"
+    - echo "Pipeline started from GitHub!"
   rules:
-    - if: $CI_PIPELINE_SOURCE == "trigger"
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "trigger" # <--- Required for the API call

@@ -1,0 +1,28 @@
+name: Sync and Trigger GitLab
+
+on:
+  push:
+    branches:
+      - file-sharing  # Change this if your default branch is 'master'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to GitLab
+        run: |
+          # Replace 'gitlab.home/user/repo.git' with your actual GitLab path
+          git push --force https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.home/root/fileshare-gitlab HEAD:refs/heads/main
+
+      - name: Trigger GitLab Pipeline
+        run: |
+          # Replace '3' with your Project ID and 'gitlab.home' with your URL
+          curl --request POST \
+               --form token=${{ secrets.GITLAB_TRIGGER_TOKEN }} \
+               --form ref=main \
+               "https://gitlab.home/api/v4/projects/4/trigger/pipeline"
