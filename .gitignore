@@ -24,3 +24,6 @@ mysql-container.session.sql
 .vscode/
 
 ENVIRONMENT_SETUP.md
+
+
+.github/

@@ -113,7 +113,7 @@ export default function AuthRoute({ children }) {
         try {
             const response = await api('/auth/login', loginFormData, undefined, token)
 
-            console.log("Login Response:", response);
+            console.log("Login Response:", response.message);
             const newToken = response.token;
             setToken(newToken)
             localStorage.setItem("authToken", newToken);

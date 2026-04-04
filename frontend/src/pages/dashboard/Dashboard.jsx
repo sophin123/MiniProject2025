@@ -28,7 +28,7 @@ export default function Dashboard() {
         <>
             <nav className="navbar navbar-light bg-light mb-4 shadow-sm">
                 <div className="container">
-                    <span className="navbar-brand mb-0 h1">LAN File Share v2</span>
+                    <span className="navbar-brand mb-0 h1">LAN File Share</span>
                     <div className="ms-auto d-flex align-items-center gap-3">
                         <span className="text-muted">Welcome {user?.username}</span>
                         <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>Logout</button>
